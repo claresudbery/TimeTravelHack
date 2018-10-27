@@ -17,6 +17,58 @@ $(document).ready(function () {
     getData();
 });
 
+function reactToAlert(puckConnection) {  
+    console.log("ALERT!!!");  
+    console.log("puck connection: " + puckConnection);  
+
+    var alertToggle = false;
+    var path = document.getElementsByTagName('path')[0];
+    puckConnection.write("LED2.reset();\n", function() {});
+    addItem("ALERT!!");
+
+    var started = Date.now();
+    // make it loop every 500 milliseconds (ie twice per second)
+    var interval = setInterval(function(){      
+        // Stop after 5 seconds
+        if (Date.now() - started > 5000) {
+            console.log("resetting LEDs");
+            path.style.fill="rgb(200,0,200)";
+            puckConnection.write("LED1.reset();\n", function() {});
+            puckConnection.write("LED3.reset();\n", function() {});
+            clearInterval(interval);      
+        } else {      
+            alertToggle = !alertToggle;
+            console.log("flashing colours after alert");
+            if (alertToggle) {
+                path.style.fill="rgb(0,150,150)";
+                puckConnection.write("LED3.reset();\n", function() {});
+                puckConnection.write("LED1.set();\n", function() {});
+            } else {
+                path.style.fill="rgb(0,150,0)";
+                puckConnection.write("LED1.reset();\n", function() {});
+                puckConnection.write("LED3.set();\n", function() {});
+            }
+        }
+    }, 500); // every 500 milliseconds (ie twice per second)
+}
+
+function checkForAlert(puckConnection) {
+    console.log("Checking for an alert");
+    $.ajax({
+        type: 'GET',
+        url: uri + '/alertquery',
+        success: function (data) {
+            console.log("API: " + data);
+            if (data === "alert") {
+                reactToAlert(puckConnection);
+            }
+            setTimeout(function() {
+                checkForAlert(puckConnection);
+            }, 1000);
+        }
+    });
+} 
+
 function getData() {
     $.ajax({
         type: 'GET',
@@ -45,34 +97,13 @@ function addItem() {
         url: uri,
         contentType: 'application/json',
         error: function (jqXHR, textStatus, errorThrown) {
-            alert('Something went wrong with addItem');
+            alert("'Can't add new items - received error from API (Is the API running?)");
         },
         success: function (result) {
             getData();
             $('#add-name').val('');
         }
     });
-}
-
-function deleteItem(id) {
-    $.ajax({
-        url: uri + '/' + id,
-        type: 'DELETE',
-        success: function (result) {
-            getData();
-        }
-    });
-}
-
-function editItem(id) {
-    $.each(todos, function (key, item) {
-        if (item.id === id) {
-            $('#edit-name').val(item.name);
-            $('#edit-id').val(item.id);
-            $('#edit-isComplete')[0].checked = item.isComplete;
-        }
-    });
-    $('#spoiler').css({ 'display': 'block' });
 }
 
 $('.my-form').on('submit', function () {
