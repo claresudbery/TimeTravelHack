@@ -41,5 +41,14 @@ namespace TimeTravelApi.Controllers
             }
             return item;
         }
+
+        [HttpPost]
+        public IActionResult Create(MoreTimeRequest item)
+        {
+            _context.MoreTimeRequests.Add(item);
+            _context.SaveChanges();
+
+            return CreatedAtRoute("GetMoreTimeRequest", new { id = item.Id }, item);
+        }
     }
 }
