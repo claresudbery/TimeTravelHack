@@ -10,7 +10,7 @@
 
         svg {
           display:block; position:absolute;
-          top:50px; left:300px; width:50%; height:50%;
+          top:50px; left:300px; width:100%; height:100%;
         }
 		
         input[type='submit'], button, [aria-label] {
@@ -751,7 +751,7 @@
   <script type="text/javascript">
     // Get the actual curve inside the SVG. You could make different
     // parts of a more complex SVG do different things...
-    var path = document.getElementsByTagName('path')[0];
+    var path = document.getElementsByTagName('svg')[0];
     // Make sure your mouse cursor turns into a hand when over it, and gray it out
     path.style="cursor:pointer;fill:#BBB";
 

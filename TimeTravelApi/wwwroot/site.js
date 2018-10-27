@@ -22,7 +22,7 @@ function reactToAlert(puckConnection) {
     console.log("puck connection: " + puckConnection);  
 
     var alertToggle = false;
-    var path = document.getElementsByTagName('path')[0];
+    var path = document.getElementsByTagName('svg')[0];
     puckConnection.write("LED2.reset();\n", function() {});
     addItem("ALERT!!");
 
