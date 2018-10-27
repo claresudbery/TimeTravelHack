@@ -29,8 +29,6 @@ function getData() {
 
                 $('<tr><td><input disabled="true" type="checkbox" ' + checked + '></td>' +
                     '<td>' + item.id + '</td>' +
-                    '<td><button onclick="editItem(' + item.id + ')">Edit</button></td>' +
-                    '<td><button onclick="deleteItem(' + item.id + ')">Delete</button></td>' +
                     '</tr>').appendTo($('#todos'));
             });
 
