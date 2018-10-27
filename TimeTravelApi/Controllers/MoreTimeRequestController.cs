@@ -46,10 +46,9 @@ namespace TimeTravelApi.Controllers
             return item;
         }
 
-        // GET api/alertquery
-        [HttpGet]
-        public ActionResult<bool> Get()
-        {         
+        [HttpGet("{alert}", Name = "GetAlert")]
+        public ActionResult<bool> GetAlert(bool alert)
+        {
             return true;
         }
 
