@@ -77,10 +77,10 @@ function getData() {
             $('#todos').empty();
             getCount(data.length);
             $.each(data, function (key, item) {
-                const checked = item.Expired ? 'checked' : '';
+                const checked = item.expired ? 'checked' : '';
 
                 $('<tr><td><input disabled="true" type="checkbox" ' + checked + '></td>' +
-                    '<td>' + item.id + '</td>' +
+                    '<td>' + item.requestTimeStamp + '</td>' +
                     '</tr>').appendTo($('#todos'));
             });
 
