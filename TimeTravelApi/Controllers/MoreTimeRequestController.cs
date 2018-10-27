@@ -47,9 +47,29 @@ namespace TimeTravelApi.Controllers
         }
 
         [HttpGet("{alert}", Name = "GetAlert")]
-        public ActionResult<bool> GetAlert(bool alert)
+        public ActionResult<bool> GetAlert(bool hackyBool)
         {
-            return true;
+            var mostRecentTimeRequest = _context.MoreTimeRequests.Last();
+            var alert = false;
+
+            if (mostRecentTimeRequest.Expired == false)
+            {
+                var timeDifference = DateTime.Now.TimeOfDay.Minutes - mostRecentTimeRequest.RequestTimeStamp.TimeOfDay.Minutes;
+                if (timeDifference < 0)
+                {
+                    timeDifference = timeDifference + 60;
+                }
+
+                if (timeDifference >= 1)
+    // TODO: change to 20 minutes
+                {
+                    alert = true;
+                    mostRecentTimeRequest.Expired = true;
+                    _context.MoreTimeRequests.Update(mostRecentTimeRequest);
+                    _context.SaveChanges();
+                }
+            }
+            return alert;
         }
 
         [HttpPost]
