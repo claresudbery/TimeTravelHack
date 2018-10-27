@@ -32,7 +32,7 @@ function reactToAlert(puckConnection) {
         // Stop after 5 seconds
         if (Date.now() - started > 5000) {
             console.log("resetting LEDs");
-            path.style.fill="rgb(200,0,200)";
+     //       path.style.fill="rgb(200,0,200)";
             puckConnection.write("LED1.reset();\n", function() {});
             puckConnection.write("LED3.reset();\n", function() {});
             clearInterval(interval);      
@@ -40,11 +40,11 @@ function reactToAlert(puckConnection) {
             alertToggle = !alertToggle;
             console.log("flashing colours after alert");
             if (alertToggle) {
-                path.style.fill="rgb(0,150,150)";
+       //         path.style.fill="rgb(0,150,150)";
                 puckConnection.write("LED3.reset();\n", function() {});
                 puckConnection.write("LED1.set();\n", function() {});
             } else {
-                path.style.fill="rgb(0,150,0)";
+//                path.style.fill="rgb(0,150,0)";
                 puckConnection.write("LED1.reset();\n", function() {});
                 puckConnection.write("LED3.set();\n", function() {});
             }
@@ -59,12 +59,12 @@ function checkForAlert(puckConnection) {
         url: uri + '/true',
         success: function (data) {
             console.log("API: " + data);
-            if (data === "true") {
+            if (data === true) {
                 reactToAlert(puckConnection);
             }
             setTimeout(function() {
                 checkForAlert(puckConnection);
-            }, 1000);
+            }, 20000);
         }
     });
 } 
