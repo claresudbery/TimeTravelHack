@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using TimeTravelApi.Models;
+using System;
 
 namespace TimeTravelApi.Controllers
 {
@@ -27,7 +28,7 @@ namespace TimeTravelApi.Controllers
         [HttpGet]
         public ActionResult<List<MoreTimeRequest>> GetAll()
         {
-            return _context.MoreTimeRequest.ToList();
+            return _context.MoreTimeRequests.ToList();
         }
 
         [HttpGet("{id}", Name = "GetMoreTimeRequest")]
