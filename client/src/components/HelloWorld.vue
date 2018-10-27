@@ -2,11 +2,14 @@
   <div class="hello">
     <h1>{{ msg }}</h1>
     <button @click="travelClicked">Travel in Time!</button>
+    <button @click="Puck.write('LED1.set();\n');">On!</button>
+    <button @click="Puck.write('LED1.reset();\n');">Off!</button>
   </div>
 </template>
 
 <script>
   import axios from 'axios'
+  
 export default {
   name: 'HelloWorld',
   data () {
