@@ -56,10 +56,10 @@ function checkForAlert(puckConnection) {
     console.log("Checking for an alert");
     $.ajax({
         type: 'GET',
-        url: uri + '/alertquery',
+        url: uri + '/true',
         success: function (data) {
             console.log("API: " + data);
-            if (data === "alert") {
+            if (data === "true") {
                 reactToAlert(puckConnection);
             }
             setTimeout(function() {
