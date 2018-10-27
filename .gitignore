@@ -508,5 +508,7 @@ tags
 # Persistent undo
 [._]*.un~
 
+# Visual Studio Code
+*/.vscode/
 
 # End of https://www.gitignore.io/api/vim,node,intellij
