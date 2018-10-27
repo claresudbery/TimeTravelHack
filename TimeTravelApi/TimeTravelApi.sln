@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTravelApi", "TimeTravelApi.csproj", "{924EABD5-DD68-44D3-AFDA-8283EAAA2172}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTravelApi.Tests", "..\TimeTravelApi.Tests\TimeTravelApi.Tests.csproj", "{2F9348F1-4D6D-42DC-B522-07F86BEDD3DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTravelApiTests", "..\TimeTravelApiTests\TimeTravelApiTests.csproj", "{C11397B1-11BA-47DE-9654-FA77C155357C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2F9348F1-4D6D-42DC-B522-07F86BEDD3DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F9348F1-4D6D-42DC-B522-07F86BEDD3DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F9348F1-4D6D-42DC-B522-07F86BEDD3DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F9348F1-4D6D-42DC-B522-07F86BEDD3DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
