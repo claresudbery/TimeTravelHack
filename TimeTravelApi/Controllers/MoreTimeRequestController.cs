@@ -20,7 +20,11 @@ namespace TimeTravelApi.Controllers
             {
                 // Create a new MoreTimeRequest if collection is empty,
                 // which means you can't delete all MoreTimeRequests.
-                _context.MoreTimeRequests.Add(new MoreTimeRequest { RequestTimeStamp = DateTime.Now });
+                _context.MoreTimeRequests.Add(
+                    new MoreTimeRequest { 
+                        RequestTimeStamp = DateTime.Now,
+                        Expired = false
+                    });
                 _context.SaveChanges();
             }
         }
@@ -42,10 +46,20 @@ namespace TimeTravelApi.Controllers
             return item;
         }
 
+        // GET api/alertquery
+        [HttpGet]
+        public ActionResult<bool> Get()
+        {         
+            return true;
+        }
+
         [HttpPost]
         public IActionResult Create()
         {
-            var newItem = new MoreTimeRequest {RequestTimeStamp = DateTime.Now};
+            var newItem = new MoreTimeRequest {
+                RequestTimeStamp = DateTime.Now,
+                Expired = false
+            };
             _context.MoreTimeRequests.Add(newItem);
             _context.SaveChanges();
 

@@ -6,5 +6,6 @@ namespace TimeTravelApi.Models
     {
         public long Id { get; set; }
         public DateTime RequestTimeStamp { get; set; }
+        public bool Expired {get; set;}
     }
 }
