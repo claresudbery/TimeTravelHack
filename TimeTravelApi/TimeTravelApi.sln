@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2048
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TimeTravelApi", "TimeTravelApi.csproj", "{924EABD5-DD68-44D3-AFDA-8283EAAA2172}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTravelApiTests", "..\TimeTravelApiTests\TimeTravelApiTests.csproj", "{C11397B1-11BA-47DE-9654-FA77C155357C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{924EABD5-DD68-44D3-AFDA-8283EAAA2172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C11397B1-11BA-47DE-9654-FA77C155357C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7FE0A53-C8BB-45E0-AAA1-219A2B226F09}
+	EndGlobalSection
+EndGlobal
