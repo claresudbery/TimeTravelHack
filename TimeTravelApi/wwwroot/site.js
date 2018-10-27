@@ -22,7 +22,7 @@ function reactToAlert(puckConnection) {
     console.log("puck connection: " + puckConnection);  
 
     var alertToggle = false;
-    var path = document.getElementsByTagName('svg')[0];
+    var heading = document.getElementsByTagName('h1')[0];
     puckConnection.write("LED2.reset();\n", function() {});
     addItem("ALERT!!");
 
@@ -32,7 +32,7 @@ function reactToAlert(puckConnection) {
         // Stop after 5 seconds
         if (Date.now() - started > 5000) {
             console.log("resetting LEDs");
-     //       path.style.fill="rgb(200,0,200)";
+            $("h1").css('background-color', '#fff').css('color', '#000');
             puckConnection.write("LED1.reset();\n", function() {});
             puckConnection.write("LED3.reset();\n", function() {});
             clearInterval(interval);      
@@ -40,11 +40,11 @@ function reactToAlert(puckConnection) {
             alertToggle = !alertToggle;
             console.log("flashing colours after alert");
             if (alertToggle) {
-       //         path.style.fill="rgb(0,150,150)";
+                $("h1").css('background-color', '#FF0000').css('color', '#FFFF00');
                 puckConnection.write("LED3.reset();\n", function() {});
                 puckConnection.write("LED1.set();\n", function() {});
             } else {
-//                path.style.fill="rgb(0,150,0)";
+                $("h1").css('background-color', '#FFFF00').css('color', '#FF0000');
                 puckConnection.write("LED1.reset();\n", function() {});
                 puckConnection.write("LED3.set();\n", function() {});
             }
