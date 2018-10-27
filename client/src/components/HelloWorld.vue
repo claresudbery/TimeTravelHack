@@ -1,21 +1,52 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <button @click="TravelClicked">Travel in Time!</button>
+    <button @click="travelClicked">Travel in Time!</button>
   </div>
 </template>
 
 <script>
+  import axios from 'axios'
 export default {
   name: 'HelloWorld',
   data () {
     return {
-      msg: 'Time Travel'
+      msg: 'Time Travel',
+      isTimeOver: false,
+      requestEndpoint: 'localhost:5001/api/moretimerequest',
+      timeAlertEndpoint: 'localhost:5001/timealert'
     }
   },
   methods: {
-    TravelClicked () {
+    travelClicked () {
       console.log("Works!")
+      axios.post(this.requestEndpoint)
+        .then(response => {
+          console.log(response.status)
+        })
+        .catch(error => {
+          console.log("Uh Oh! " + error.message)
+        })
+      setInterval(function () {
+        this.pollTimeAlert();
+      }.bind(this), 1000);
+    },
+    pollTimeAlert () {
+      axios.get(this.timeAlertEndpoint)
+        .then(response => {
+          if(response.data === 1)
+          {
+            console.log("Time's Up!")
+            this.isTimeOver = true;
+          }
+          else {
+            console.log("Time goes by, so slowly")
+            this.isTimeOver = false;
+          }
+        })
+        .catch(error => {
+          console.log("Error retrieving time update: " + error.message)
+        })
     }
 
   }
