@@ -1,45 +1,44 @@
-﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+using TimeTravelApi.Models;
 
 namespace TimeTravelApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class MoreTimeRequestController : ControllerBase
     {
-        // GET api/values
+        private readonly MoreTimeRequestContext _context;
+
+        public MoreTimeRequestController(MoreTimeRequestContext context)
+        {
+            _context = context;
+
+            if (_context.MoreTimeRequests.Count() == 0)
+            {
+                // Create a new MoreTimeRequest if collection is empty,
+                // which means you can't delete all MoreTimeRequests.
+                _context.MoreTimeRequests.Add(new MoreTimeRequest { RequestTimeStamp = DateTime.Now });
+                _context.SaveChanges();
+            }
+        }
+
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<List<MoreTimeRequest>> GetAll()
         {
-            return new string[] { "value1", "value2" };
+            return _context.MoreTimeRequest.ToList();
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        [HttpGet("{id}", Name = "GetMoreTimeRequest")]
+        public ActionResult<MoreTimeRequest> GetById(long id)
         {
-            return "value";
-        }
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            var item = _context.MoreTimeRequests.Find(id);
+            if (item == null)
+            {
+                return NotFound();
+            }
+            return item;
         }
     }
 }
