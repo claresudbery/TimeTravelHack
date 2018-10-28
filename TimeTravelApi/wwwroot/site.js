@@ -103,6 +103,14 @@ function getTimeToDisplay() {
             hours = formatTimeDisplay(data.newHours);
             minutes = formatTimeDisplay(data.newMinutes);
             seconds = formatTimeDisplay(data.newSeconds);
+
+            // if (data.newSeconds >= 0 && data.newSeconds <=10) {
+            //     minutes = formatTimeDisplay(data.newMinutes - 20);
+            // } else {
+            //     minutes = formatTimeDisplay(data.newMinutes);                
+            // }
+
+            console.log('NEW TIME ' + hours + ":" + minutes + ":" + seconds)
             document.querySelector('.clock').innerHTML = `${hours}:${minutes}:${seconds}`;
         }
     })
