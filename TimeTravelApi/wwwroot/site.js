@@ -1,17 +1,4 @@
 const uri = 'api/moretimerequest';
-let todos = null;
-function getCount(data) {
-    const el = $('#counter');
-    let name = 'to-do';
-    if (data) {
-        if (data > 1) {
-            name = 'to-dos';
-        }
-        el.text(data + ' ' + name);
-    } else {
-        el.html('No ' + name);
-    }
-}
 
 $(document).ready(function () {
     getData();
@@ -23,8 +10,9 @@ function reactToAlert(puckConnection) {
 
     var alertToggle = false;
     var heading = document.getElementsByTagName('h1')[0];
-    puckConnection.write("LED2.reset();\n", function() {});
-    addItem("ALERT!!");
+    if (puckConnection){
+        puckConnection.write("LED2.reset();\n", function() {});
+    }
 
     var started = Date.now();
     // make it loop every 500 milliseconds (ie twice per second)
@@ -33,20 +21,27 @@ function reactToAlert(puckConnection) {
         if (Date.now() - started > 5000) {
             console.log("resetting LEDs");
             $("h1").css('background-color', '#fff').css('color', '#000');
-            puckConnection.write("LED1.reset();\n", function() {});
-            puckConnection.write("LED3.reset();\n", function() {});
-            clearInterval(interval);      
+            if (puckConnection){
+                puckConnection.write("LED1.reset();\n", function() {});
+                puckConnection.write("LED3.reset();\n", function() {});
+            }
+            clearInterval(interval);   
+            getData();   
         } else {      
             alertToggle = !alertToggle;
             console.log("flashing colours after alert");
             if (alertToggle) {
                 $("h1").css('background-color', '#FF0000').css('color', '#FFFF00');
-                puckConnection.write("LED3.reset();\n", function() {});
-                puckConnection.write("LED1.set();\n", function() {});
+                if (puckConnection){
+                    puckConnection.write("LED3.reset();\n", function() {});
+                    puckConnection.write("LED1.set();\n", function() {});
+                }
             } else {
                 $("h1").css('background-color', '#FFFF00').css('color', '#FF0000');
-                puckConnection.write("LED1.reset();\n", function() {});
-                puckConnection.write("LED3.set();\n", function() {});
+                if (puckConnection){
+                    puckConnection.write("LED1.reset();\n", function() {});
+                    puckConnection.write("LED3.set();\n", function() {});
+                }
             }
         }
     }, 500); // every 500 milliseconds (ie twice per second)
@@ -74,22 +69,19 @@ function getData() {
         type: 'GET',
         url: uri,
         success: function (data) {
-            $('#todos').empty();
-            getCount(data.length);
+            $('#timerequests').empty();
             $.each(data, function (key, item) {
                 const checked = item.expired ? 'checked' : '';
 
                 $('<tr><td><input disabled="true" type="checkbox" ' + checked + '></td>' +
                     '<td>' + item.requestTimeStamp + '</td>' +
-                    '</tr>').appendTo($('#todos'));
+                    '</tr>').appendTo($('#timerequests'));
             });
-
-            todos = data;
         }
     });
 }
 
-function addItem() {
+function addTimeRequest() {
 
     $.ajax({
         type: 'POST',
@@ -105,28 +97,6 @@ function addItem() {
         }
     });
 }
-
-$('.my-form').on('submit', function () {
-    const item = {
-        'name': $('#edit-name').val(),
-        'isComplete': $('#edit-isComplete').is(':checked'),
-        'id': $('#edit-id').val()
-    };
-
-    $.ajax({
-        url: uri + '/' + $('#edit-id').val(),
-        type: 'PUT',
-        accepts: 'application/json',
-        contentType: 'application/json',
-        data: JSON.stringify(item),
-        success: function (result) {
-            getData();
-        }
-    });
-
-    closeInput();
-    return false;
-});
 
 function closeInput() {
     $('#spoiler').css({ 'display': 'none' });

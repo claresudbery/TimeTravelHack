@@ -53,7 +53,7 @@
             <th></th>
             <th></th>
         </tr>
-        <tbody id="todos"></tbody>
+        <tbody id="timerequests"></tbody>
     </table>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"
@@ -64,52 +64,42 @@
     
   <script src="https://www.puck-js.com/puck.js"></script>
   <script type="text/javascript">
-    // Get the actual curve inside the SVG. You could make different
-    // parts of a more complex SVG do different things...
-    var path = document.getElementsByTagName('img')[0];
-    // Make sure your mouse cursor turns into a hand when over it, and gray it out
-    path.style="cursor:pointer;fill:#BBB";
+    var img = document.getElementsByTagName('img')[0];
 
-    // Called when we get a line of data - updates the light color
-    var buttonToggle = false;
-    var numClicks = 0;
-    var forwardClockSvgPath = "M21,10.12H14.22L16.96,7.3C14.23,4.6 9.81,4.5 7.08,7.2C4.35,9.91 4.35,14.28 7.08,17C9.81,19.7 14.23,19.7 16.96,17C18.32,15.65 19,14.08 19,12.1H21C21,14.08 20.12,16.65 18.36,18.39C14.85,21.87 9.15,21.87 5.64,18.39C2.14,14.92 2.11,9.28 5.62,5.81C9.13,2.34 14.76,2.34 18.27,5.81L21,3V10.12M12.5,8V12.25L16,14.33L15.28,15.54L11,13V8H12.5Z";
-    var simpleClockSvgPath = "M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z";
-    var backwardClockSvgPath = "M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3";
+    // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
+    img.style="cursor:pointer;fill:#BBB";
 
+    // Called when we get a line of data - this might mean the button has been clicked
     function onLine(v) {
-      buttonToggle = !buttonToggle;
       if (v.includes("click\r")) {
         console.log("BUTTON CLICKED");
-        numClicks++;
-        if (buttonToggle) {
-          path.style.fill="rgb(200,0,200)";
-          path.setAttribute("d",forwardClockSvgPath);
-          addItem("Forwards " + numClicks);
-        } else {
-          path.style.fill="rgb(200,200,0)";
-          path.setAttribute("d",backwardClockSvgPath);
-          addItem("Backwards " + numClicks);
-        }
+        addTimeRequest();
       }
     }
 
     // When clicked, connect or disconnect
     var connection;
-    path.addEventListener("click", function() {
+    var startedChecking = false;
+    img.addEventListener("click", function() {
       if (connection) {
         connection.close();
         connection = undefined;
       }
       Puck.connect(function(c) {
+        // Start polling immediately for alerts, even if there is no Puck connection.
+        connection = c;
+        if (!startedChecking) {
+            checkForAlert(connection);
+            startedChecking = true;
+        } else {            
+            console.log("Not checking for alerts any more cos already doing that!!");
+        }
+        
         if (!c) {
-          alert("Couldn't connect!");
+          console.log("Couldn't connect to puck! Adding time request instead.");
+          addTimeRequest();
           return;
         }
-        connection = c;
-
-        // Start polling immediately for alerts.
-        checkForAlert(connection);
 
         // Handle the data we get back, and call 'onLine'
         // whenever we get a line
@@ -127,7 +117,8 @@
         connection.write("reset();\n", function() {
           // Wait for it to reset itself
           setTimeout(function() {
-            // Now tell it to set up an event handler which will call 
+            // Now tell it to set up an event handler which will send back a 'click' 
+            // message whenever the puck button is clicked
             connection.write("setWatch(function(e) {Bluetooth.println('click');LED2.set();setTimeout(function(){LED2.reset();},500);}, BTN, {edge:'falling', debounce:50, repeat:true});\n",
               function() { console.log("Ready..."); });
           }, 1500);
