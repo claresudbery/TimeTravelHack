@@ -53,8 +53,8 @@ function checkForAlert(puckConnection, uniqueId) {
         type: 'GET',
         url: uri + '/' + uniqueId,
         success: function (data) {
-            console.log("API: " + data);
-            if (data === true) {
+            console.log("API: " + data.alert + ", " + data.newTime);
+            if (data.alert === true) {
                 reactToAlert(puckConnection);
             }
             setTimeout(function() {

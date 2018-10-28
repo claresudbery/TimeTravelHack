@@ -9,11 +9,7 @@ namespace TimeTravelApi.Models
             bool expired = false;
             if (timeRequest.Expired == false)
             {
-                var timeDifference = DateTime.Now.TimeOfDay.Minutes - timeRequest.RequestTimeStamp.TimeOfDay.Minutes;
-                if (timeDifference < 0)
-                {
-                    timeDifference = timeDifference + 60;
-                }
+                var timeDifference = GetTimeDifferenceSinceRequest(timeRequest);
 
                 if (timeDifference >= 1)
                 // TODO: change to 20 minutes instead of 1
@@ -22,6 +18,16 @@ namespace TimeTravelApi.Models
                 }
             }
             return expired;
+        }
+
+        public int GetTimeDifferenceSinceRequest(MoreTimeRequest timeRequest)
+        {
+            var timeDifference = DateTime.Now.TimeOfDay.Minutes - timeRequest.RequestTimeStamp.TimeOfDay.Minutes;
+            if (timeDifference < 0)
+            {
+                timeDifference = timeDifference + 60;
+            }
+            return timeDifference;
         }
     }
 }

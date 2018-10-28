@@ -37,7 +37,7 @@ namespace TimeTravelApi.Controllers
         }
 
         [HttpGet("{userId}", Name = "GetAlert")]
-        public ActionResult<bool> GetAlert(String userId)
+        public ActionResult<TimeAndAlert> GetAlert(String userId)
         {
             var alertProcessor = new AlertProcessor();
             var mostRecentTimeRequest = _context.MoreTimeRequests.Last();
@@ -49,7 +49,7 @@ namespace TimeTravelApi.Controllers
                 _context.MoreTimeRequests.Update(mostRecentTimeRequest);
                 _context.SaveChanges();
             }
-            return alert;
+            return new TimeAndAlert {Alert = alert, NewTime = DateTime.Now};
         }
 
         [HttpPost]
