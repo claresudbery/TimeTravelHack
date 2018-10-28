@@ -1,7 +1,8 @@
 const uri = 'api/moretimerequest';
 
 $(document).ready(function () {
-    getData();
+	getData();
+	getTimeToDisplay();
 });
 
 function reactToAlert(puckConnection) {  
@@ -81,6 +82,25 @@ function getData() {
             });
         }
     });
+}
+
+function getTimeToDisplay() {
+	setInterval(() => {
+        var time = new Date(),
+        hours = formatTimeDisplay(time.getHours()),
+        minutes = formatTimeDisplay(time.getMinutes()),
+        seconds = formatTimeDisplay(time.getSeconds());
+
+        document.querySelector('.clock').innerHTML = `${hours}:${minutes} :${seconds}` 
+    }, 1000)
+
+}
+
+function formatTimeDisplay(number) {
+    if(number < 10) {
+        number = '0' + number
+    }
+    return number
 }
 
 function addTimeRequest(uniqueId) {    

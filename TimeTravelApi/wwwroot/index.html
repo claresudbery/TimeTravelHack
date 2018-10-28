@@ -1,79 +1,90 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Time Machine FTW!!!</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css?family=Chakra+Petch');
+	<meta charset="UTF-8">
+	<title>Time Machine FTW!!!</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Chakra+Petch');
 
-        h1 {
-            font-family: 'Chakra Petch', sans-serif;
-            font-size: 3em;
-        }
+    body {
+      font-family: 'Chakra Petch', sans-serif;
+    }
+		h1 {
+			font-size: 3em;
+		}
 
-        body { 
-            margin:0;  
-        }
+		body {
+			margin: 0;
+		}
 
-        svg {
-          display:block; position:absolute;
-          top:50px; left:300px; width:100%; height:100%;
-        }
-		
-        input[type='submit'], button, [aria-label] {
-            cursor: pointer;
-        }
+		svg {
+			display: block;
+			position: absolute;
+			top: 50px;
+			left: 300px;
+			width: 100%;
+			height: 100%;
+		}
 
-        #spoiler {
-            display: none;
-        }
+		input[type='submit'], button, [aria-label] {
+			cursor: pointer;
+		}
 
-        table {
-            font-family: Arial, sans-serif;
-            border: 1px solid;
-            border-collapse: collapse;
-        }
+		#spoiler {
+			display: none;
+		}
 
-        th {
-            background-color: #0066CC;
-            color: white;
-        }
+		table {
+			font-family: Arial, sans-serif;
+			border: 1px solid;
+			border-collapse: collapse;
+		}
 
-        td {
-            border: 1px solid;
-            padding: 5px;
-        }
-    </style>
+		th {
+			background-color: #0066CC;
+			color: white;
+		}
+
+		td {
+			border: 1px solid;
+			padding: 5px;
+		}
+
+		.clock {
+			font-size: 4em;
+		}
+	</style>
 </head>
 <body>
-<div align="center">
+	<div align="center">
 
-    <h1>Time Machine FTW!!!</h1>
+		<h1>Time Machine FTW!!!</h1>
 
-    <!-- Tardis image -->
-    <img width="162" height="312" style="margin-top: 56px;" src="tardis.png" alt="tardis!!!">
+		<!-- Tardis image -->
+		<img width="162" height="312" style="margin-top: 56px; padding-bottom: 40px;" src="tardis.png" alt="tardis!!!">
+
+		<div class="clock"></div>
+
+		<table>
+			<tr>
+				<th>Expired</th>
+				<th>Start Time</th>
+				<th>Length</th>
+				<th>User Id</th>
+				<th></th>
+				<th></th>
+			</tr>
+			<tbody id="timerequests"></tbody>
+		</table>
+
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+				integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+				crossorigin="anonymous"></script>
+		<script src="site.js"></script>
 
 
-    <table>
-        <tr>
-            <th>Expired</th>
-            <th>Start Time</th>
-            <th>Length</th>
-            <th>User Id</th>
-            <th></th>
-            <th></th>
-        </tr>
-        <tbody id="timerequests"></tbody>
-    </table>
-
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
-    <script src="site.js"></script>
-
-
-  <script src="https://www.puck-js.com/puck.js"></script>
-  <script type="text/javascript">
+		<script src="https://www.puck-js.com/puck.js"></script>
+		<script type="text/javascript">
     function uuidv4() {
         return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
             (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -148,7 +159,7 @@
         });
       });
     });
-  </script>
-</div>
+		</script>
+	</div>
 </body>
 </html>
