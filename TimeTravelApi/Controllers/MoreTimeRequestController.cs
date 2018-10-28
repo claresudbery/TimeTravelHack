@@ -40,14 +40,21 @@ namespace TimeTravelApi.Controllers
         public ActionResult<TimeAndAlert> GetAlert(String userId)
         {
             var alertProcessor = new AlertProcessor();
-            var mostRecentTimeRequest = _context.MoreTimeRequests.Last();
-            var alert = alertProcessor.HasTimeRequestExpired(mostRecentTimeRequest);
-
-            if (alert)
+            var mostRecentTimeRequest = _context
+                .MoreTimeRequests
+                .Where(x => x.UserId == userId)
+                .LastOrDefault();
+            var alert = false;
+            if (mostRecentTimeRequest != null)
             {
-                mostRecentTimeRequest.Expired = true;
-                _context.MoreTimeRequests.Update(mostRecentTimeRequest);
-                _context.SaveChanges();
+                alert = alertProcessor.HasTimeRequestExpired(mostRecentTimeRequest);
+
+                if (alert)
+                {
+                    mostRecentTimeRequest.Expired = true;
+                    _context.MoreTimeRequests.Update(mostRecentTimeRequest);
+                    _context.SaveChanges();
+                }
             }
             return new TimeAndAlert {Alert = alert, NewTime = DateTime.Now};
         }
