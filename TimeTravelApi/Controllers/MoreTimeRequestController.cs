@@ -70,6 +70,13 @@ namespace TimeTravelApi.Controllers
                     .Select(x => x.RequestTimeStamp)
                     .Min();
                 newTime = earliestExpiredRequestStartTime;
+
+                foreach(var request in justExpiredTimeRequests) 
+                {
+                    request.Expired = true;
+                    _context.MoreTimeRequests.Update(request);
+                }
+                _context.SaveChanges();
             }
 
             return new TimeAndAlert {Alert = alert, 
