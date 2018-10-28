@@ -75,6 +75,7 @@ function getData() {
 
                 $('<tr><td><input disabled="true" type="checkbox" ' + checked + '></td>' +
                     '<td>' + item.requestTimeStamp + '</td>' +
+                    '<td>' + item.lengthInMinutes + '</td>' +
                     '</tr>').appendTo($('#timerequests'));
             });
         }

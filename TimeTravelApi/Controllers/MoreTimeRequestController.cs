@@ -23,7 +23,8 @@ namespace TimeTravelApi.Controllers
                 _context.MoreTimeRequests.Add(
                     new MoreTimeRequest { 
                         RequestTimeStamp = DateTime.Now,
-                        Expired = false
+                        Expired = false,
+                        LengthInMinutes = 20
                     });
                 _context.SaveChanges();
             }
@@ -61,7 +62,7 @@ namespace TimeTravelApi.Controllers
                 }
 
                 if (timeDifference >= 1)
-    // TODO: change to 20 minutes
+                // TODO: change to 20 minutes instead of 1
                 {
                     alert = true;
                     mostRecentTimeRequest.Expired = true;
@@ -77,7 +78,8 @@ namespace TimeTravelApi.Controllers
         {
             var newItem = new MoreTimeRequest {
                 RequestTimeStamp = DateTime.Now,
-                Expired = false
+                Expired = false,
+                LengthInMinutes = 20
             };
             _context.MoreTimeRequests.Add(newItem);
             _context.SaveChanges();
