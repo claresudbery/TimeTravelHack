@@ -50,25 +50,15 @@ namespace TimeTravelApi.Controllers
         [HttpGet("{alert}", Name = "GetAlert")]
         public ActionResult<bool> GetAlert(bool hackyBool)
         {
+            var alertProcessor = new AlertProcessor();
             var mostRecentTimeRequest = _context.MoreTimeRequests.Last();
-            var alert = false;
+            var alert = alertProcessor.HasTimeRequestExpired(mostRecentTimeRequest);
 
-            if (mostRecentTimeRequest.Expired == false)
+            if (alert)
             {
-                var timeDifference = DateTime.Now.TimeOfDay.Minutes - mostRecentTimeRequest.RequestTimeStamp.TimeOfDay.Minutes;
-                if (timeDifference < 0)
-                {
-                    timeDifference = timeDifference + 60;
-                }
-
-                if (timeDifference >= 1)
-                // TODO: change to 20 minutes instead of 1
-                {
-                    alert = true;
-                    mostRecentTimeRequest.Expired = true;
-                    _context.MoreTimeRequests.Update(mostRecentTimeRequest);
-                    _context.SaveChanges();
-                }
+                mostRecentTimeRequest.Expired = true;
+                _context.MoreTimeRequests.Update(mostRecentTimeRequest);
+                _context.SaveChanges();
             }
             return alert;
         }
