@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>Time Machine FTW!!!</title>
     <style>
+        @import url('https://fonts.googleapis.com/css?family=Chakra+Petch');
+
+        h1 {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 3em;
+        }
+
         body { 
             margin:0;  
         }
@@ -39,6 +46,7 @@
     </style>
 </head>
 <body>
+<div align="center">
 
     <h1>Time Machine FTW!!!</h1>
 
@@ -62,8 +70,8 @@
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
             crossorigin="anonymous"></script>
     <script src="site.js"></script>
-	
-    
+
+
   <script src="https://www.puck-js.com/puck.js"></script>
   <script type="text/javascript">
     function uuidv4() {
@@ -75,7 +83,7 @@
     var img = document.getElementsByTagName('img')[0];
 
     // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
-    img.style="cursor:pointer;fill:#BBB";  
+    img.style="cursor:pointer;fill:#BBB";
 
     var uniqueId = uuidv4();
     console.log("new id: " + uniqueId);
@@ -99,17 +107,17 @@
       Puck.connect(function(c) {
         // Start polling immediately for alerts, even if there is no Puck connection.
         connection = c;
-        if (connection) { 
+        if (connection) {
             uniqueId = uuidv4();
             console.log("new id: " + uniqueId);
         }
-        if (!startedChecking) {  
+        if (!startedChecking) {
             checkForAlert(connection, uniqueId);
             startedChecking = true;
-        } else {            
+        } else {
             console.log("Not checking for alerts any more cos already doing that!!");
         }
-        
+
         if (!c) {
           console.log("Couldn't connect to puck! Adding time request instead.");
           addTimeRequest(uniqueId);
@@ -132,7 +140,7 @@
         connection.write("reset();\n", function() {
           // Wait for it to reset itself
           setTimeout(function() {
-            // Now tell it to set up an event handler which will send back a 'click' 
+            // Now tell it to set up an event handler which will send back a 'click'
             // message whenever the puck button is clicked
             connection.write("setWatch(function(e) {Bluetooth.println('click');LED2.set();setTimeout(function(){LED2.reset();},500);}, BTN, {edge:'falling', debounce:50, repeat:true});\n",
               function() { console.log("Ready..."); });
@@ -141,5 +149,6 @@
       });
     });
   </script>
+</div>
 </body>
 </html>

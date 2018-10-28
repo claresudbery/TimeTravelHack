@@ -4,15 +4,14 @@ namespace TimeTravelApi.Models
 {
     public class AlertProcessor
     {
-        public bool HasTimeRequestExpired(MoreTimeRequest timeRequest)
+        public bool HasTimeRequestJustExpired(MoreTimeRequest timeRequest)
         {         
             bool expired = false;
             if (timeRequest.Expired == false)
             {
                 var timeDifference = GetTimeDifferenceSinceRequest(timeRequest);
 
-                if (timeDifference >= 1)
-                // TODO: change to 20 minutes instead of 1
+                if (timeDifference >= timeRequest.LengthInMinutes)
                 {
                     expired = true;
                 }

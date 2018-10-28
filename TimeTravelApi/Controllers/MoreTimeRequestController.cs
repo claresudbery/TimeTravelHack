@@ -24,7 +24,7 @@ namespace TimeTravelApi.Controllers
                     new MoreTimeRequest { 
                         RequestTimeStamp = DateTime.Now,
                         Expired = false,
-                        LengthInMinutes = 20
+                        LengthInMinutes = TimeConstants.DefaultRequestLengthInMinutes
                     });
                 _context.SaveChanges();
             }
@@ -44,10 +44,11 @@ namespace TimeTravelApi.Controllers
                 .MoreTimeRequests
                 .Where(x => x.UserId == userId)
                 .LastOrDefault();
+
             var alert = false;
             if (mostRecentTimeRequest != null)
             {
-                alert = alertProcessor.HasTimeRequestExpired(mostRecentTimeRequest);
+                alert = alertProcessor.HasTimeRequestJustExpired(mostRecentTimeRequest);
 
                 if (alert)
                 {
@@ -56,7 +57,22 @@ namespace TimeTravelApi.Controllers
                     _context.SaveChanges();
                 }
             }
-            return new TimeAndAlert {Alert = alert, NewTime = DateTime.Now};
+            
+            var newTime = DateTime.Now;
+            var justExpiredTimeRequests = _context
+                .MoreTimeRequests
+                .ToList()
+                .Where(x => alertProcessor.HasTimeRequestJustExpired(x));
+            
+            if (justExpiredTimeRequests.Count() > 0)
+            {
+                var earliestExpiredRequestStartTime = justExpiredTimeRequests
+                    .Select(x => x.RequestTimeStamp)
+                    .Min();
+                newTime = earliestExpiredRequestStartTime;
+            }
+
+            return new TimeAndAlert {Alert = alert, NewTime = newTime};
         }
 
         [HttpPost]
@@ -65,7 +81,7 @@ namespace TimeTravelApi.Controllers
             var newItem = new MoreTimeRequest {
                 RequestTimeStamp = DateTime.Now,
                 Expired = false,
-                LengthInMinutes = 20,
+                LengthInMinutes = TimeConstants.DefaultRequestLengthInMinutes,
                 UserId = newRequest.UserId
             };
             _context.MoreTimeRequests.Add(newItem);
