@@ -117,10 +117,10 @@ function formatTimeDisplay(number) {
     return number
 }
 
-function addTimeRequest(uniqueId) {    
+function addTimeRequest(uniqueId) {
     const item = {
         'userId': uniqueId,
-        //'lengthInMinutes'
+        'lengthInMinutes': document.forms[0].elements['RequestedTimeInMinutes'].value
     };
 
     $.ajax({

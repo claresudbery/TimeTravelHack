@@ -85,7 +85,7 @@ namespace TimeTravelApi.Controllers
             var newItem = new MoreTimeRequest {
                 RequestTimeStamp = DateTime.Now,
                 Expired = false,
-                LengthInMinutes = TimeConstants.DefaultRequestLengthInMinutes,
+                LengthInMinutes = newRequest.LengthInMinutes,
                 UserId = newRequest.UserId
             };
             _context.MoreTimeRequests.Add(newItem);
