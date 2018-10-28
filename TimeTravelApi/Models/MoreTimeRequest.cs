@@ -8,5 +8,6 @@ namespace TimeTravelApi.Models
         public DateTime RequestTimeStamp { get; set; }
         public bool Expired {get; set;}
         public int LengthInMinutes {get; set;}
+        public String UserId {get; set;}
     }
 }

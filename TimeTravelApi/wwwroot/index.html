@@ -65,16 +65,25 @@
     
   <script src="https://www.puck-js.com/puck.js"></script>
   <script type="text/javascript">
+    function uuidv4() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+            (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+        )
+    }
+
     var img = document.getElementsByTagName('img')[0];
 
     // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
-    img.style="cursor:pointer;fill:#BBB";
+    img.style="cursor:pointer;fill:#BBB";  
+
+    var uniqueId = uuidv4();
+    console.log("new id: " + uniqueId);
 
     // Called when we get a line of data - this might mean the button has been clicked
     function onLine(v) {
       if (v.includes("click\r")) {
         console.log("BUTTON CLICKED");
-        addTimeRequest();
+        addTimeRequest(uniqueId);
       }
     }
 
@@ -89,8 +98,12 @@
       Puck.connect(function(c) {
         // Start polling immediately for alerts, even if there is no Puck connection.
         connection = c;
-        if (!startedChecking) {
-            checkForAlert(connection);
+        if (connection) { 
+            uniqueId = uuidv4();
+            console.log("new id: " + uniqueId);
+        }
+        if (!startedChecking) {  
+            checkForAlert(connection, uniqueId);
             startedChecking = true;
         } else {            
             console.log("Not checking for alerts any more cos already doing that!!");
@@ -98,7 +111,7 @@
         
         if (!c) {
           console.log("Couldn't connect to puck! Adding time request instead.");
-          addTimeRequest();
+          addTimeRequest(uniqueId);
           return;
         }
 

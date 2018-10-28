@@ -47,18 +47,18 @@ function reactToAlert(puckConnection) {
     }, 500); // every 500 milliseconds (ie twice per second)
 }
 
-function checkForAlert(puckConnection) {
+function checkForAlert(puckConnection, uniqueId) {
     console.log("Checking for an alert");
     $.ajax({
         type: 'GET',
-        url: uri + '/true',
+        url: uri + '/' + uniqueId,
         success: function (data) {
             console.log("API: " + data);
             if (data === true) {
                 reactToAlert(puckConnection);
             }
             setTimeout(function() {
-                checkForAlert(puckConnection);
+                checkForAlert(puckConnection, uniqueId);
             }, 20000);
         }
     });
@@ -82,13 +82,17 @@ function getData() {
     });
 }
 
-function addTimeRequest() {
+function addTimeRequest(uniqueId) {    
+    const item = {
+        'userId': uniqueId
+    };
 
     $.ajax({
         type: 'POST',
         accepts: 'application/json',
         url: uri,
         contentType: 'application/json',
+        data: JSON.stringify(item),
         error: function (jqXHR, textStatus, errorThrown) {
             alert("'Can't add new items - received error from API (Is the API running?)");
         },

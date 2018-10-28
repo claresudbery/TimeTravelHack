@@ -36,19 +36,8 @@ namespace TimeTravelApi.Controllers
             return _context.MoreTimeRequests.ToList();
         }
 
-        [HttpGet("{id}", Name = "GetMoreTimeRequest")]
-        public ActionResult<MoreTimeRequest> GetById(long id)
-        {
-            var item = _context.MoreTimeRequests.Find(id);
-            if (item == null)
-            {
-                return NotFound();
-            }
-            return item;
-        }
-
-        [HttpGet("{alert}", Name = "GetAlert")]
-        public ActionResult<bool> GetAlert(bool hackyBool)
+        [HttpGet("{userId}", Name = "GetAlert")]
+        public ActionResult<bool> GetAlert(String userId)
         {
             var alertProcessor = new AlertProcessor();
             var mostRecentTimeRequest = _context.MoreTimeRequests.Last();
@@ -64,19 +53,20 @@ namespace TimeTravelApi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create()
+        public IActionResult Create(MoreTimeRequest newRequest)
         {
             var newItem = new MoreTimeRequest {
                 RequestTimeStamp = DateTime.Now,
                 Expired = false,
-                LengthInMinutes = 20
+                LengthInMinutes = 20,
+                UserId = newRequest.UserId
             };
             _context.MoreTimeRequests.Add(newItem);
             _context.SaveChanges();
 
             return CreatedAtRoute(
-                "GetMoreTimeRequest", 
-                new { id = newItem.Id }, 
+                "GetAlert", 
+                new { userId = newRequest.UserId }, 
                 newItem);
         }
     }
