@@ -1,8 +1,12 @@
 const uri = 'api/moretimerequest';
+var time = new Date(); 
+var hours; 
+var minutes;
+var seconds;
 
 $(document).ready(function () {
 	getData();
-	getTimeToDisplay();
+	getTimeToDisplay(this.time);
 });
 
 function reactToAlert(puckConnection) {  
@@ -57,10 +61,11 @@ function checkForAlert(puckConnection, uniqueId) {
             console.log("API: " + data.alert + ", " + data.newTime);
             if (data.alert === true) {
                 reactToAlert(puckConnection);
+                time.setMinutes(time.getMinutes() - 20);
             }
             setTimeout(function() {
                 checkForAlert(puckConnection, uniqueId);
-            }, 20000);
+            }, 5000);
         }
     });
 } 
@@ -85,13 +90,22 @@ function getData() {
 }
 
 function getTimeToDisplay() {
-	setInterval(() => {
-        var time = new Date(),
-        hours = formatTimeDisplay(time.getHours()),
-        minutes = formatTimeDisplay(time.getMinutes()),
-        seconds = formatTimeDisplay(time.getSeconds());
-
-        document.querySelector('.clock').innerHTML = `${hours}:${minutes} :${seconds}` 
+	setInterval(() => {   
+   
+        var hours;
+        var minutes;
+        var seconds;
+    $.ajax({
+        type: 'GET',
+        url: uri + '/' + uniqueId,
+        success: function (data) {
+            console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds)
+            hours = formatTimeDisplay(data.newHours);
+            minutes = formatTimeDisplay(data.newMinutes);
+            seconds = formatTimeDisplay(data.newSeconds);
+            document.querySelector('.clock').innerHTML = `${hours}:${minutes}:${seconds}`;
+        }
+    })
     }, 1000)
 
 }
@@ -105,7 +119,8 @@ function formatTimeDisplay(number) {
 
 function addTimeRequest(uniqueId) {    
     const item = {
-        'userId': uniqueId
+        'userId': uniqueId,
+        //'lengthInMinutes'
     };
 
     $.ajax({

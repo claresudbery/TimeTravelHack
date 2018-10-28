@@ -72,7 +72,11 @@ namespace TimeTravelApi.Controllers
                 newTime = earliestExpiredRequestStartTime;
             }
 
-            return new TimeAndAlert {Alert = alert, NewTime = newTime};
+            return new TimeAndAlert {Alert = alert, 
+                                    NewHours = newTime.TimeOfDay.Hours,
+                                    NewMinutes = newTime.TimeOfDay.Minutes,
+                                    NewSeconds = newTime.TimeOfDay.Seconds
+                                    };
         }
 
         [HttpPost]
