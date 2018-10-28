@@ -97,6 +97,7 @@
     // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
     img.style="cursor:pointer;fill:#BBB";
 
+    var puckConnection = null;
     var uniqueId = uuidv4();
     console.log("new id: " + uniqueId);
 
@@ -123,12 +124,13 @@
             uniqueId = uuidv4();
             console.log("new id: " + uniqueId);
         }
-        if (!startedChecking) {
-            checkForAlert(connection, uniqueId);
-            startedChecking = true;
-        } else {
-            console.log("Not checking for alerts any more cos already doing that!!");
-        }
+        puckConnection = connection;
+        //if (!startedChecking) {
+        //    checkForAlert(connection, uniqueId);
+        //    startedChecking = true;
+        //} else {
+        //    console.log("Not checking for alerts any more cos already doing that!!");
+        //}
 
         if (!c) {
           console.log("Couldn't connect to puck! Adding time request instead.");
