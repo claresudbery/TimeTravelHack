@@ -10,6 +10,7 @@ namespace TimeTravelApi.Controllers
     [ApiController]
     public class MoreTimeRequestController : ControllerBase
     {
+        private static int accumulatedTimeDifference = 0;
         private readonly MoreTimeRequestContext _context;
 
         public MoreTimeRequestController(MoreTimeRequestContext context)
@@ -48,21 +49,15 @@ namespace TimeTravelApi.Controllers
             var alert = false;
             if (mostRecentTimeRequest != null)
             {
-                alert = alertProcessor.HasTimeRequestJustExpired(mostRecentTimeRequest);
-
-                if (alert)
-                {
-                    mostRecentTimeRequest.Expired = true;
-                    _context.MoreTimeRequests.Update(mostRecentTimeRequest);
-                    _context.SaveChanges();
-                }
+                alert = alertProcessor.HasTimeRequestJustExpired(mostRecentTimeRequest, accumulatedTimeDifference);
             }
             
-            var newTime = DateTime.Now;
+            var newTime = DateTime.Now.AddMinutes(-accumulatedTimeDifference);
+
             var justExpiredTimeRequests = _context
                 .MoreTimeRequests
                 .ToList()
-                .Where(x => alertProcessor.HasTimeRequestJustExpired(x));
+                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, accumulatedTimeDifference));
             
             if (justExpiredTimeRequests.Count() > 0)
             {
@@ -71,7 +66,12 @@ namespace TimeTravelApi.Controllers
                     .Min();
                 newTime = earliestExpiredRequestStartTime;
 
-                foreach(var request in justExpiredTimeRequests) 
+                var timeDifference = alertProcessor
+                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, accumulatedTimeDifference);
+
+                accumulatedTimeDifference += timeDifference;
+
+                foreach (var request in justExpiredTimeRequests) 
                 {
                     request.Expired = true;
                     _context.MoreTimeRequests.Update(request);
@@ -90,7 +90,7 @@ namespace TimeTravelApi.Controllers
         public IActionResult Create(MoreTimeRequest newRequest)
         {
             var newItem = new MoreTimeRequest {
-                RequestTimeStamp = DateTime.Now,
+                RequestTimeStamp = DateTime.Now.AddMinutes(-accumulatedTimeDifference),
                 Expired = false,
                 LengthInMinutes = newRequest.LengthInMinutes,
                 UserId = newRequest.UserId
