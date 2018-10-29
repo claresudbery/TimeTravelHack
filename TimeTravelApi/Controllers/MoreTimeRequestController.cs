@@ -24,8 +24,8 @@ namespace TimeTravelApi.Controllers
                 _context.MoreTimeRequests.Add(
                     new MoreTimeRequest { 
                         RequestTimeStamp = DateTime.Now,
-                        Expired = false,
-                        LengthInMinutes = TimeConstants.DefaultRequestLengthInMinutes
+                        Expired = true,
+                        LengthInMinutes = 0
                     });
                 _context.SaveChanges();
             }
