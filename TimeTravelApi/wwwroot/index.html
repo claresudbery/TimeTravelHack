@@ -95,6 +95,7 @@
     var puckConnection = null;
     var workingWithoutPuck = false;
     var connection;
+    var uniqueId = "dummy id";
 
     // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
     var img = document.getElementsByTagName('img')[0];
@@ -116,7 +117,7 @@
 
     function handleNoPuckConnection() {   
       if (confirm("Couldn't connect to puck! Would you like to add a time request every time you click on the tardis?")) {
-        var uniqueId = uuidv4();
+        uniqueId = uuidv4();
         console.log("new id: " + uniqueId);
         addTimeRequest(uniqueId);
         workingWithoutPuck = true;
