@@ -1,4 +1,8 @@
 const uri = 'api/moretimerequest';
+var puckConnection = null;
+var workingWithoutPuck = false;
+var connection;
+var uniqueId = "dummy id";
 var hours;
 var minutes;
 var seconds;
@@ -7,10 +11,96 @@ var newMinutes;
 var alert = false;
 var dataReceivedFromAPI = false;
 
+// Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
+var img = document.getElementsByTagName('img')[0];
+img.style="cursor:pointer;fill:#BBB";
+
 $(document).ready(function () {
     getData();
     seconds = 0;
 	updateClockData();
+});
+
+function uuidv4() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
+}
+
+// Called when we get a line of data - this might mean the button has been clicked
+function onLine(v) {
+  if (v.includes("click\r")) {
+    console.log("BUTTON CLICKED");
+    addTimeRequest(uniqueId);
+  }
+}
+
+function handleNoPuckConnection() {   
+  if (confirm("Couldn't connect to puck! Would you like to add a time request every time you click on the tardis?")) {
+    uniqueId = uuidv4();
+    console.log("new id: " + uniqueId);
+    addTimeRequest(uniqueId);
+    workingWithoutPuck = true;
+  }
+}
+
+function handleDataFromPuck() {      
+  // Handle the data we get back, and call 'onLine'
+  // whenever we get a line
+  var buf = "";
+  puckConnection.on("data", function(d) {
+    buf += d;
+    var i = buf.indexOf("\n");
+    while (i>=0) {
+      onLine(buf.substr(0,i));
+      buf = buf.substr(i+1);
+      i = buf.indexOf("\n");
+    }
+  });
+}
+
+function setupPuckEvents() {
+  // First, reset Puck.js
+  puckConnection.write("reset();\n", function() {
+    // Wait for it to reset itself
+    setTimeout(function() {
+      // Now tell it to set up an event handler which will send back a 'click'
+      // message whenever the puck button is clicked
+      puckConnection.write("setWatch(function(e) {Bluetooth.println('click');LED2.set();setTimeout(function(){LED2.reset();},500);}, BTN, {edge:'falling', debounce:50, repeat:true});\n",
+        function() { console.log("Ready..."); });
+    }, 1500);
+  });
+}
+
+function createPuckConnection() {      
+    Puck.connect(function(c) {
+      puckConnection = c;
+      if (puckConnection) {
+          uniqueId = uuidv4();
+          console.log("new id: " + uniqueId);
+      }
+
+      if (!puckConnection) {
+        handleNoPuckConnection();
+      } else {
+        handleDataFromPuck();
+        setupPuckEvents();
+      }
+    });
+}
+
+// When clicked, connect or disconnect
+img.addEventListener("click", function() {
+  if (connection) {
+    connection.close();
+    connection = undefined;
+  }
+
+  if (workingWithoutPuck) {
+    addTimeRequest(uniqueId);
+  } else {
+    createPuckConnection();
+  }
 });
 
 function getData() {
