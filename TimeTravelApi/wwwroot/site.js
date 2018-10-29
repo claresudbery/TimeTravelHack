@@ -1,7 +1,12 @@
 const uri = 'api/moretimerequest';
+var time = new Date(); 
+var hours; 
+var minutes;
+var seconds;
 
 $(document).ready(function () {
-    getData();
+	getData();
+	getTimeToDisplay(this.time);
 });
 
 function reactToAlert(puckConnection) {  
@@ -47,25 +52,6 @@ function reactToAlert(puckConnection) {
     }, 500); // every 500 milliseconds (ie twice per second)
 }
 
-function checkForAlert(puckConnection, uniqueId) {
-    console.log("Checking for an alert");
-    $.ajax({
-        type: 'GET',
-        url: uri + '/' + uniqueId,
-        success: function (data) {
-            console.log("API: " + data.alert + ", " + data.newTime);
-            // !!!!! data.newTime is the new time for your clock.
-            // Even if it hasn't changed you may as well just set the clock to whatever it tells you.
-            if (data.alert === true) {
-                reactToAlert(puckConnection);
-            }
-            setTimeout(function() {
-                checkForAlert(puckConnection, uniqueId);
-            }, 20000);
-        }
-    });
-} 
-
 function getData() {
     $.ajax({
         type: 'GET',
@@ -85,9 +71,44 @@ function getData() {
     });
 }
 
-function addTimeRequest(uniqueId) {    
+function getTimeToDisplay() {
+	setInterval(() => {   
+   
+        var hours;
+        var minutes;
+        var seconds;
+    $.ajax({
+        type: 'GET',
+        url: uri + '/' + uniqueId,
+        success: function (data) {
+            if(puckConnection != null) {
+                if (data.alert === true) {
+                    reactToAlert(puckConnection);
+                }
+            }
+            console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds)
+            hours = formatTimeDisplay(data.newHours);
+            minutes = formatTimeDisplay(data.newMinutes);
+            seconds = formatTimeDisplay(data.newSeconds);
+            console.log('NEW TIME ' + hours + ":" + minutes + ":" + seconds)
+            document.querySelector('.clock').innerHTML = `${hours}:${minutes}:${seconds}`;
+        }
+    })
+    }, 1000)
+
+}
+
+function formatTimeDisplay(number) {
+    if(number < 10) {
+        number = '0' + number
+    }
+    return number
+}
+
+function addTimeRequest(uniqueId) {
     const item = {
-        'userId': uniqueId
+        'userId': uniqueId,
+        'lengthInMinutes': document.forms[0].elements['RequestedTimeInMinutes'].value
     };
 
     $.ajax({
