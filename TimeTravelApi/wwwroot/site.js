@@ -181,7 +181,9 @@ function getTimeAndAlertData() {
                     console.log("ALERT!!! (but won't appear in browser until seconds tick over the minute threshold)");  
                 }
             }
-            console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds);
+            console.log("API TIME " 
+                + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds
+                + " (won't update until seconds reach :59)");
             newHours = data.newHours;
             newMinutes = data.newMinutes;
             if (!dataReceivedFromAPI) {
