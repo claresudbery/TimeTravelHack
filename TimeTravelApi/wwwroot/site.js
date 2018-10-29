@@ -1,12 +1,12 @@
 const uri = 'api/moretimerequest';
-var time = new Date(); 
-var hours; 
-var minutes;
+var formattedHours;
+var formattedMinutes;
 var seconds;
 
 $(document).ready(function () {
-	getData();
-	getTimeToDisplay(this.time);
+    getData();
+    seconds = 0;
+	getTimeAndAlertData();
 });
 
 function reactToAlert(puckConnection) {  
@@ -71,31 +71,36 @@ function getData() {
     });
 }
 
-function getTimeToDisplay() {
-	setInterval(() => {   
-   
-        var hours;
-        var minutes;
-        var seconds;
-    $.ajax({
-        type: 'GET',
-        url: uri + '/' + uniqueId,
-        success: function (data) {
-            if(puckConnection != null) {
-                if (data.alert === true) {
-                    reactToAlert(puckConnection);
+function getTimeAndAlertData() {
+	setInterval(() => { 
+        // Only make API calls every 20 seconds
+        if (seconds === 0 || seconds === 20 || seconds === 40)
+        {
+            $.ajax({
+                type: 'GET',
+                url: uri + '/' + uniqueId,
+                success: function (data) {
+                    if(puckConnection != null) {
+                        if (data.alert === true) {
+                            reactToAlert(puckConnection);
+                        }
+                    }
+                    console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds);
+                    formattedHours = formatTimeDisplay(data.newHours);
+                    formattedMinutes = formatTimeDisplay(data.newMinutes);
                 }
-            }
-            console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds)
-            hours = formatTimeDisplay(data.newHours);
-            minutes = formatTimeDisplay(data.newMinutes);
-            seconds = formatTimeDisplay(data.newSeconds);
-            console.log('NEW TIME ' + hours + ":" + minutes + ":" + seconds)
-            document.querySelector('.clock').innerHTML = `${hours}:${minutes}:${seconds}`;
+            });
         }
-    })
-    }, 1000)
-
+        // Because of API delays and infrequent API requests, it's better to handle the seconds separately from the hours and minutes.
+        seconds = seconds + 1;
+        if (seconds === 60) {
+            seconds = 0;
+        }
+        if (formattedHours) {
+            var formattedSeconds = formatTimeDisplay(seconds);
+            document.querySelector('.clock').innerHTML = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+        }
+    }, 1000) // The interval goes off once per second, but the API call is made less often (see above).
 }
 
 function formatTimeDisplay(number) {
