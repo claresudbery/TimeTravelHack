@@ -1,12 +1,7 @@
 const uri = 'api/moretimerequest';
-var time = new Date(); 
-var hours; 
-var minutes;
-var seconds;
 
 $(document).ready(function () {
-	getData();
-	getTimeToDisplay(this.time);
+    getData();
 });
 
 function reactToAlert(puckConnection) {  
@@ -58,15 +53,15 @@ function checkForAlert(puckConnection, uniqueId) {
         type: 'GET',
         url: uri + '/' + uniqueId,
         success: function (data) {
-            console.log("API: " + data.alert + ", " + 
-                data.newHours + ":" + data.newMinutes + ":" + data.newSeconds);
+            console.log("API: " + data.alert + ", " + data.newTime);
+            // !!!!! data.newTime is the new time for your clock.
+            // Even if it hasn't changed you may as well just set the clock to whatever it tells you.
             if (data.alert === true) {
                 reactToAlert(puckConnection);
-                time.setMinutes(time.getMinutes() - 20);
             }
             setTimeout(function() {
                 checkForAlert(puckConnection, uniqueId);
-            }, 5000);
+            }, 20000);
         }
     });
 } 
@@ -90,72 +85,9 @@ function getData() {
     });
 }
 
-function getTimeToDisplay() {
-	setInterval(() => {   
-   
-        var hours;
-        var minutes;
-        var seconds;
-    $.ajax({
-        type: 'GET',
-        url: uri + '/' + uniqueId,
-        success: function (data) {
-            if(puckConnection != null) {
-                if (data.alert === true) {
-                    reactToAlert(puckConnection);
-                    //time.setMinutes(time.getMinutes() - 20);
-                }
-            }
-            console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds)
-            hours = formatTimeDisplay(data.newHours);
-            minutes = formatTimeDisplay(data.newMinutes);
-            seconds = formatTimeDisplay(data.newSeconds);
-
-            // if (data.newSeconds === 0) {
-            //     hours = formatTimeDisplay(14);
-            //     minutes = formatTimeDisplay(20);
-            //     seconds = formatTimeDisplay(0);
-            // } else if (data.newSeconds === 1) {
-            //     hours = formatTimeDisplay(14);
-            //     minutes = formatTimeDisplay(0);
-            //     seconds = formatTimeDisplay(0);
-            // }else if (data.newSeconds === 2) {
-            //     hours = formatTimeDisplay(15);
-            //     minutes = formatTimeDisplay(20);
-            //     seconds = formatTimeDisplay(0);
-            // }else if (data.newSeconds === 3) {
-            //     hours = formatTimeDisplay(15);
-            //     minutes = formatTimeDisplay(0);
-            //     seconds = formatTimeDisplay(0);
-            // }else if (data.newSeconds === 4) {
-            //     hours = formatTimeDisplay(16);
-            //     minutes = formatTimeDisplay(20);
-            //     seconds = formatTimeDisplay(0);
-            // }else if (data.newSeconds === 5) {
-            //     hours = formatTimeDisplay(16);
-            //     minutes = formatTimeDisplay(0);
-            //     seconds = formatTimeDisplay(0);
-            // }
-
-            console.log('NEW TIME ' + hours + ":" + minutes + ":" + seconds)
-            document.querySelector('.clock').innerHTML = `${hours}:${minutes}:${seconds}`;
-        }
-    })
-    }, 1000)
-
-}
-
-function formatTimeDisplay(number) {
-    if(number < 10) {
-        number = '0' + number
-    }
-    return number
-}
-
-function addTimeRequest(uniqueId) {
+function addTimeRequest(uniqueId) {    
     const item = {
-        'userId': uniqueId,
-        'lengthInMinutes': document.forms[0].elements['RequestedTimeInMinutes'].value
+        'userId': uniqueId
     };
 
     $.ajax({

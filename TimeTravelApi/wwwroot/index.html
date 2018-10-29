@@ -98,6 +98,7 @@
     img.style="cursor:pointer;fill:#BBB";
 
     var puckConnection = null;
+    var workingWithoutPuck = false;
     var uniqueId = uuidv4();
     console.log("new id: " + uniqueId);
 
@@ -117,50 +118,49 @@
         connection.close();
         connection = undefined;
       }
-      Puck.connect(function(c) {
-        // Start polling immediately for alerts, even if there is no Puck connection.
-        connection = c;
-        if (connection) {
-            uniqueId = uuidv4();
-            console.log("new id: " + uniqueId);
-        }
-        puckConnection = connection;
-        //if (!startedChecking) {
-        //    checkForAlert(connection, uniqueId);
-        //    startedChecking = true;
-        //} else {
-        //    console.log("Not checking for alerts any more cos already doing that!!");
-        //}
-
-        if (!c) {
-          console.log("Couldn't connect to puck! Adding time request instead.");
-          addTimeRequest(uniqueId);
-          return;
-        }
-
-        // Handle the data we get back, and call 'onLine'
-        // whenever we get a line
-        var buf = "";
-        connection.on("data", function(d) {
-          buf += d;
-          var i = buf.indexOf("\n");
-          while (i>=0) {
-            onLine(buf.substr(0,i));
-            buf = buf.substr(i+1);
-            i = buf.indexOf("\n");
+      if (workingWithoutPuck) {
+        addTimeRequest(uniqueId);
+      } else {
+        Puck.connect(function(c) {
+          connection = c;
+          if (connection) {
+              uniqueId = uuidv4();
+              console.log("new id: " + uniqueId);
           }
+          puckConnection = connection;
+
+          if (!c) {
+            if (confirm("Couldn't connect to puck! Would you like to add a time request every time you click on the tardis?")) {
+              addTimeRequest(uniqueId);
+              workingWithoutPuck = true;
+            }
+            return;
+          }
+
+          // Handle the data we get back, and call 'onLine'
+          // whenever we get a line
+          var buf = "";
+          connection.on("data", function(d) {
+            buf += d;
+            var i = buf.indexOf("\n");
+            while (i>=0) {
+              onLine(buf.substr(0,i));
+              buf = buf.substr(i+1);
+              i = buf.indexOf("\n");
+            }
+          });
+          // First, reset Puck.js
+          connection.write("reset();\n", function() {
+            // Wait for it to reset itself
+            setTimeout(function() {
+              // Now tell it to set up an event handler which will send back a 'click'
+              // message whenever the puck button is clicked
+              connection.write("setWatch(function(e) {Bluetooth.println('click');LED2.set();setTimeout(function(){LED2.reset();},500);}, BTN, {edge:'falling', debounce:50, repeat:true});\n",
+                function() { console.log("Ready..."); });
+            }, 1500);
+          });
         });
-        // First, reset Puck.js
-        connection.write("reset();\n", function() {
-          // Wait for it to reset itself
-          setTimeout(function() {
-            // Now tell it to set up an event handler which will send back a 'click'
-            // message whenever the puck button is clicked
-            connection.write("setWatch(function(e) {Bluetooth.println('click');LED2.set();setTimeout(function(){LED2.reset();},500);}, BTN, {edge:'falling', debounce:50, repeat:true});\n",
-              function() { console.log("Ready..."); });
-          }, 1500);
-        });
-      });
+      }
     });
 		</script>
 	</div>
