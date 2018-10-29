@@ -50,6 +50,12 @@ namespace TimeTravelApi.Controllers
             if (mostRecentTimeRequest != null)
             {
                 alert = alertProcessor.HasTimeRequestJustExpired(mostRecentTimeRequest, accumulatedTimeDifference);
+                if (alert) 
+                {
+                    mostRecentTimeRequest.Expired = true;
+                    _context.MoreTimeRequests.Update(mostRecentTimeRequest);
+                    _context.SaveChanges();
+                }
             }
             
             var newTime = DateTime.Now.AddMinutes(-accumulatedTimeDifference);
@@ -57,7 +63,12 @@ namespace TimeTravelApi.Controllers
             var justExpiredTimeRequests = _context
                 .MoreTimeRequests
                 .ToList()
-                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, accumulatedTimeDifference));
+                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, accumulatedTimeDifference))
+                .ToList();
+            if (alert) 
+            {
+                justExpiredTimeRequests.Add(mostRecentTimeRequest);
+            }
             
             if (justExpiredTimeRequests.Count() > 0)
             {
