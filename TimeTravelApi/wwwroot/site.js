@@ -1,7 +1,11 @@
 const uri = 'api/moretimerequest';
-var formattedHours;
-var formattedMinutes;
+var hours;
+var minutes;
 var seconds;
+var newHours;
+var newMinutes;
+var alert = false;
+var dataReceivedFromAPI = false;
 
 $(document).ready(function () {
     getData();
@@ -82,12 +86,17 @@ function getTimeAndAlertData() {
                 success: function (data) {
                     if(puckConnection != null) {
                         if (data.alert === true) {
-                            reactToAlert(puckConnection);
+                            alert = true;
                         }
                     }
                     console.log('API TIME ' + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds);
-                    formattedHours = formatTimeDisplay(data.newHours);
-                    formattedMinutes = formatTimeDisplay(data.newMinutes);
+                    newHours = data.newHours;
+                    newMinutes = data.newMinutes;
+                    if (!dataReceivedFromAPI) {
+                        dataReceivedFromAPI = true;
+                        hours = newHours;
+                        minutes = newMinutes;
+                    }
                 }
             });
         }
@@ -95,8 +104,19 @@ function getTimeAndAlertData() {
         seconds = seconds + 1;
         if (seconds === 60) {
             seconds = 0;
+            // Don't update hours and minutes until seconds tick back over to 0, otherwise
+            // you get weird things like moving from 12:34:59 to 12:34:00 (instead of 12:35:00)
+            hours = newHours;
+            minutes = newMinutes;
+            // Only react to alerts in here, so they coincide with the time changing.
+            if (alert === true) {
+                alert = false;
+                reactToAlert(puckConnection);
+            }
         }
-        if (formattedHours) {
+        if (dataReceivedFromAPI) {
+            var formattedHours = formatTimeDisplay(hours);
+            var formattedMinutes = formatTimeDisplay(minutes);
             var formattedSeconds = formatTimeDisplay(seconds);
             document.querySelector('.clock').innerHTML = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
         }
