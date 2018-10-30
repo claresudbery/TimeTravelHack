@@ -18,7 +18,8 @@ img.style="cursor:pointer;fill:#BBB";
 $(document).ready(function () {
     getData();
     seconds = 0;
-	updateClockData();
+    updateClockData();
+    checkForAlerts();
 });
 
 function uuidv4() {
@@ -170,17 +171,11 @@ function reactToAlert(puckConnection) {
     }, 500); // every 500 milliseconds (ie twice per second)
 }
 
-function getTimeAndAlertData() {
+function getTime() {
     $.ajax({
         type: 'GET',
-        url: uri + '/' + uniqueId,
+        url: uri + '/time/' + uniqueId,
         success: function (data) {
-            if(puckConnection != null) {
-                if (data.alert === true) {
-                    alert = true;
-                    console.log("ALERT!!! (but won't appear in browser until seconds tick over the minute threshold)");  
-                }
-            }
             console.log("API TIME " 
                 + data.newHours + ":" + data.newMinutes + ":" + data.newSeconds
                 + " (won't update until seconds reach :59)");
@@ -190,6 +185,19 @@ function getTimeAndAlertData() {
                 dataReceivedFromAPI = true;
                 hours = newHours;
                 minutes = newMinutes;
+            }
+        }
+    });
+}
+
+function getAlert() {
+    $.ajax({
+        type: 'GET',
+        url: uri + '/alert/' + uniqueId,
+        success: function (data) {
+            if (data.alert === true) {
+                alert = true;
+                console.log("ALERT!!! (but won't appear in browser until seconds tick over the minute threshold)");  
             }
         }
     });
@@ -220,7 +228,7 @@ function updateClockData() {
         // Only make API calls every 20 seconds
         if (seconds === 0 || seconds === 20 || seconds === 40)
         {
-            getTimeAndAlertData();
+            getTime();
         }
         // Because of API delays and infrequent API requests, it's better to handle the seconds separately from the hours and minutes.
         seconds = seconds + 1;
@@ -231,6 +239,12 @@ function updateClockData() {
             updateClockDisplay();
         }
     }, 1000) // The interval goes off once per second, but the API call is made less often (see above).
+}
+
+function checkForAlerts() {
+	setInterval(() => { 
+        getAlert();
+    }, 20000) // Only make API calls every 20 seconds
 }
 
 function formatTimeDisplay(number) {

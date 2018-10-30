@@ -4,6 +4,21 @@ namespace TimeTravelApi.Models
 {
     public class AlertProcessor
     {
+        public bool IsTimeRequestReadyForAlert(MoreTimeRequest timeRequest, int accumulatedTime)
+        {         
+            bool alert = false;
+            if (timeRequest.Alerted == false)
+            {
+                var timeDifference = GetTimeDifferenceSinceRequest(timeRequest.RequestTimeStamp, accumulatedTime);
+
+                if (timeDifference >= timeRequest.LengthInMinutes)
+                {
+                    alert = true;
+                }
+            }
+            return alert;
+        }
+
         public bool HasTimeRequestJustExpired(MoreTimeRequest timeRequest, int accumulatedTime)
         {         
             bool expired = false;
