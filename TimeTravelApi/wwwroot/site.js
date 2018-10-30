@@ -111,9 +111,11 @@ function getData() {
         success: function (data) {
             $('#timerequests').empty();
             $.each(data, function (key, item) {
-                const checked = item.expired ? 'checked' : '';
+                const expired = item.expired ? 'checked' : '';
+                const alerted = item.alerted ? 'checked' : '';
 
-                $('<tr><td><input disabled="true" type="checkbox" ' + checked + '></td>' +
+                $('<tr><td><input disabled="true" type="checkbox" ' + expired + '></td>' +
+                    '<td><input disabled="true" type="checkbox" ' + alerted + '></td>' +
                     '<td>' + item.requestTimeStamp + '</td>' +
                     '<td>' + item.lengthInMinutes + '</td>' +
                     '<td>' + item.userId + '</td>' +
