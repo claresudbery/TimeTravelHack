@@ -1,3 +1,4 @@
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace TimeTravelApi.Models
@@ -10,5 +11,16 @@ namespace TimeTravelApi.Models
         }
 
         public DbSet<MoreTimeRequest> MoreTimeRequests { get; set; }
+
+        public void RemoveAllTimeRequests()
+        {
+            foreach (var id in MoreTimeRequests.Select(e => e.Id))
+            {
+                var entity = new MoreTimeRequest { Id = id };
+                MoreTimeRequests.Attach(entity);
+                MoreTimeRequests.Remove(entity);
+            }
+            SaveChanges();
+        }
     }
 }

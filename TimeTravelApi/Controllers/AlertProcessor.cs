@@ -4,12 +4,18 @@ namespace TimeTravelApi.Models
 {
     public class AlertProcessor
     {
-        public bool IsTimeRequestReadyForAlert(MoreTimeRequest timeRequest, int accumulatedTime)
+        public bool IsTimeRequestReadyForAlert(
+            MoreTimeRequest timeRequest, 
+            int accumulatedTime,
+            ITimeTravelClock clock)
         {         
             bool alert = false;
             if (timeRequest.Alerted == false)
             {
-                var timeDifference = GetTimeDifferenceSinceRequest(timeRequest.RequestTimeStamp, accumulatedTime);
+                var timeDifference = GetTimeDifferenceSinceRequest(
+                    timeRequest.RequestTimeStamp, 
+                    accumulatedTime,
+                    clock);
 
                 if (timeDifference >= timeRequest.LengthInMinutes)
                 {
@@ -19,12 +25,18 @@ namespace TimeTravelApi.Models
             return alert;
         }
 
-        public bool HasTimeRequestJustExpired(MoreTimeRequest timeRequest, int accumulatedTime)
+        public bool HasTimeRequestJustExpired(
+            MoreTimeRequest timeRequest, 
+            int accumulatedTime,
+            ITimeTravelClock clock)
         {         
             bool expired = false;
             if (timeRequest.Expired == false)
             {
-                var timeDifference = GetTimeDifferenceSinceRequest(timeRequest.RequestTimeStamp, accumulatedTime);
+                var timeDifference = GetTimeDifferenceSinceRequest(
+                    timeRequest.RequestTimeStamp, 
+                    accumulatedTime,
+                    clock);
 
                 if (timeDifference >= timeRequest.LengthInMinutes)
                 {
@@ -34,9 +46,12 @@ namespace TimeTravelApi.Models
             return expired;
         }
 
-        public int GetTimeDifferenceSinceRequest(DateTime requestTimestamp, int accumulatedTime)
+        public int GetTimeDifferenceSinceRequest(
+            DateTime requestTimestamp, 
+            int accumulatedTime,
+            ITimeTravelClock clock)
         {
-            var timeDifference = DateTime.Now.AddMinutes(-accumulatedTime)
+            var timeDifference = clock.Now.AddMinutes(-accumulatedTime)
                                          .TimeOfDay.Minutes - requestTimestamp.TimeOfDay.Minutes;
             if (timeDifference < 0)
             {

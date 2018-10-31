@@ -10,20 +10,22 @@ namespace TimeTravelApi.Controllers
     [ApiController]
     public class MoreTimeRequestController : ControllerBase
     {
-        private static int accumulatedTimeDifference = 0;
-        private readonly MoreTimeRequestContext _context;
+        private static int _accumulatedTimeDifference = 0;
+        private readonly ITimeTravelClock _clock;
+        private readonly ITimeRequestData _context;
 
-        public MoreTimeRequestController(MoreTimeRequestContext context)
+        public MoreTimeRequestController(ITimeRequestData timeRequestData, ITimeTravelClock clock)
         {
-            _context = context;
+            _context = timeRequestData;
+            _clock = clock;
 
-            if (_context.MoreTimeRequests.Count() == 0)
+            if (_context.NumTimeRequests() == 0)
             {
                 // Create a new MoreTimeRequest if collection is empty,
                 // which means you can't delete all MoreTimeRequests.
-                _context.MoreTimeRequests.Add(
+                _context.AddTimeRequest(
                     new MoreTimeRequest { 
-                        RequestTimeStamp = DateTime.Now,
+                        RequestTimeStamp = _clock.Now,
                         Expired = true,
                         Alerted = true,
                         LengthInMinutes = 0
@@ -35,7 +37,7 @@ namespace TimeTravelApi.Controllers
         [HttpGet]
         public ActionResult<List<MoreTimeRequest>> GetAll()
         {
-            return _context.MoreTimeRequests.ToList();
+            return _context.AllTimeRequests();
         }
 
         [HttpGet("alert/{userId}", Name = "GetAlert")]
@@ -45,9 +47,9 @@ namespace TimeTravelApi.Controllers
             var alert = false;
 
             var timeRequestsReadyForAlert = _context
-                .MoreTimeRequests
+                .AllTimeRequests()
                 .Where(x => x.UserId == userId)
-                .Where(x => alertProcessor.IsTimeRequestReadyForAlert(x, accumulatedTimeDifference))
+                .Where(x => alertProcessor.IsTimeRequestReadyForAlert(x, _accumulatedTimeDifference, _clock))
                 .ToList();
 
             if (timeRequestsReadyForAlert.Count() > 0)
@@ -56,7 +58,7 @@ namespace TimeTravelApi.Controllers
                 foreach (var request in timeRequestsReadyForAlert) 
                 {
                     request.Alerted = true;
-                    _context.MoreTimeRequests.Update(request);
+                    _context.UpdateTimeRequest(request);
                 }
                 _context.SaveChanges();
             }
@@ -67,13 +69,12 @@ namespace TimeTravelApi.Controllers
         [HttpGet("time/{userId}", Name = "GetTime")]
         public ActionResult<TimeAndAlert> GetTime(String userId)
         {
-            var alertProcessor = new AlertProcessor();            
-            var newTime = DateTime.Now.AddMinutes(-accumulatedTimeDifference);
+            var alertProcessor = new AlertProcessor();
+            var newTime = _clock.Now.AddMinutes(-_accumulatedTimeDifference);
 
             var justExpiredTimeRequests = _context
-                .MoreTimeRequests
-                .ToList()
-                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, accumulatedTimeDifference))
+                .AllTimeRequests()
+                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, _accumulatedTimeDifference, _clock))
                 .ToList();
             
             if (justExpiredTimeRequests.Count() > 0)
@@ -84,14 +85,14 @@ namespace TimeTravelApi.Controllers
                 newTime = earliestExpiredRequestStartTime;
 
                 var timeDifference = alertProcessor
-                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, accumulatedTimeDifference);
+                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, _accumulatedTimeDifference, _clock);
 
-                accumulatedTimeDifference += timeDifference;
+                _accumulatedTimeDifference += timeDifference;
 
                 foreach (var request in justExpiredTimeRequests) 
                 {
                     request.Expired = true;
-                    _context.MoreTimeRequests.Update(request);
+                    _context.UpdateTimeRequest(request);
                 }
                 _context.SaveChanges();
             }
@@ -105,13 +106,13 @@ namespace TimeTravelApi.Controllers
         public IActionResult Create(MoreTimeRequest newRequest)
         {
             var newItem = new MoreTimeRequest {
-                RequestTimeStamp = DateTime.Now.AddMinutes(-accumulatedTimeDifference),
+                RequestTimeStamp = _clock.Now.AddMinutes(-_accumulatedTimeDifference),
                 Expired = false,
                 Alerted = false,
                 LengthInMinutes = newRequest.LengthInMinutes,
                 UserId = newRequest.UserId
             };
-            _context.MoreTimeRequests.Add(newItem);
+            _context.AddTimeRequest(newItem);
             _context.SaveChanges();
 
             return CreatedAtRoute(

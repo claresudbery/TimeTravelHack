@@ -10,5 +10,14 @@ namespace TimeTravelApi.Models
         public bool Alerted {get; set;}
         public int LengthInMinutes {get; set;}
         public String UserId {get; set;}
+
+        public void Update(MoreTimeRequest newRequest)
+        {
+            RequestTimeStamp = newRequest.RequestTimeStamp;
+            Expired = newRequest.Expired;
+            Alerted = newRequest.Alerted;
+            LengthInMinutes = newRequest.LengthInMinutes;
+            UserId = newRequest.UserId;
+        }
     }
 }
