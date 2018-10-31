@@ -15,8 +15,6 @@ namespace TimeTravelApi
 
             services.AddMvc()
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            services.AddSingleton<ITimeRequestData, TimeRequestData>();
         }
 
         public void Configure(IApplicationBuilder app)

@@ -11,33 +11,40 @@ namespace TimeTravelApi.Controllers
     public class MoreTimeRequestController : ControllerBase
     {
         private static int _accumulatedTimeDifference = 0;
-        private readonly ITimeTravelClock _clock;
-        private readonly ITimeRequestData _context;
+        private ITimeTravelClock _clock;
+        private ITimeRequestData _timeRequestData;
+        private readonly MoreTimeRequestContext _context;
 
-        public MoreTimeRequestController(ITimeRequestData timeRequestData, ITimeTravelClock clock)
+        public MoreTimeRequestController(MoreTimeRequestContext context)
         {
-            _context = timeRequestData;
-            _clock = clock;
-
-            if (_context.NumTimeRequests() == 0)
+            _context = context;
+            _timeRequestData = new TimeRequestData(_context);
+            _clock = new TimeTravelClock();
+            if (_timeRequestData.NumTimeRequests() == 0)
             {
                 // Create a new MoreTimeRequest if collection is empty,
                 // which means you can't delete all MoreTimeRequests.
-                _context.AddTimeRequest(
+                _timeRequestData.AddTimeRequest(
                     new MoreTimeRequest { 
                         RequestTimeStamp = _clock.Now,
                         Expired = true,
                         Alerted = true,
                         LengthInMinutes = 0
                     });
-                _context.SaveChanges();
+                _timeRequestData.SaveChanges();
             }
+        }
+
+        public void InjectNewDependencies(ITimeRequestData timeRequestData, ITimeTravelClock clock)
+        {
+            _timeRequestData = timeRequestData;
+            _clock = clock;
         }
 
         [HttpGet]
         public ActionResult<List<MoreTimeRequest>> GetAll()
         {
-            return _context.AllTimeRequests();
+            return _timeRequestData.AllTimeRequests();
         }
 
         [HttpGet("alert/{userId}", Name = "GetAlert")]
@@ -46,7 +53,7 @@ namespace TimeTravelApi.Controllers
             var alertProcessor = new AlertProcessor();
             var alert = false;
 
-            var timeRequestsReadyForAlert = _context
+            var timeRequestsReadyForAlert = _timeRequestData
                 .AllTimeRequests()
                 .Where(x => x.UserId == userId)
                 .Where(x => alertProcessor.IsTimeRequestReadyForAlert(x, _accumulatedTimeDifference, _clock))
@@ -58,9 +65,9 @@ namespace TimeTravelApi.Controllers
                 foreach (var request in timeRequestsReadyForAlert) 
                 {
                     request.Alerted = true;
-                    _context.UpdateTimeRequest(request);
+                    _timeRequestData.UpdateTimeRequest(request);
                 }
-                _context.SaveChanges();
+                _timeRequestData.SaveChanges();
             }
 
             return new TimeAndAlert {Alert = alert};
@@ -72,7 +79,7 @@ namespace TimeTravelApi.Controllers
             var alertProcessor = new AlertProcessor();
             var newTime = _clock.Now.AddMinutes(-_accumulatedTimeDifference);
 
-            var justExpiredTimeRequests = _context
+            var justExpiredTimeRequests = _timeRequestData
                 .AllTimeRequests()
                 .Where(x => alertProcessor.HasTimeRequestJustExpired(x, _accumulatedTimeDifference, _clock))
                 .ToList();
@@ -92,9 +99,9 @@ namespace TimeTravelApi.Controllers
                 foreach (var request in justExpiredTimeRequests) 
                 {
                     request.Expired = true;
-                    _context.UpdateTimeRequest(request);
+                    _timeRequestData.UpdateTimeRequest(request);
                 }
-                _context.SaveChanges();
+                _timeRequestData.SaveChanges();
             }
 
             return new TimeAndAlert {NewHours = newTime.TimeOfDay.Hours,
@@ -112,8 +119,8 @@ namespace TimeTravelApi.Controllers
                 LengthInMinutes = newRequest.LengthInMinutes,
                 UserId = newRequest.UserId
             };
-            _context.AddTimeRequest(newItem);
-            _context.SaveChanges();
+            _timeRequestData.AddTimeRequest(newItem);
+            _timeRequestData.SaveChanges();
 
             return CreatedAtRoute(
                 "GetAlert", 
