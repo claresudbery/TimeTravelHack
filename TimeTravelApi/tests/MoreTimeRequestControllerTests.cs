@@ -65,5 +65,23 @@ namespace TimeTravelApi.Tests
             // Assert
             Assert.True(alertAction.Value.Alert);
         }
+
+        [Test]
+        public void GivenRequestExistsAndTimeIsNotUp_WhenGetAlertCalledByRequester_ThenAlertIsNotReturned()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequest(requestLengthInMinutes, startTime, userId);
+            var alertTime = startTime.AddMinutes(requestLengthInMinutes - 10);
+
+            // Act
+            _testClock.SetDateTime(alertTime);
+            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(userId);
+
+            // Assert
+            Assert.False(alertAction.Value.Alert);
+        }
     }
 }
