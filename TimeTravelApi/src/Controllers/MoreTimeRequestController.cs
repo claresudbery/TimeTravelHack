@@ -110,6 +110,7 @@ namespace TimeTravelApi.Controllers
         [HttpPost]
         public IActionResult Create(MoreTimeRequest newRequest)
         {
+            CancelAnyUnexpiredRequestsForThisUser(newRequest.UserId);
             var negativeTimeDifference = _timeTracker.AccumulatedTimeDifference * -1;
             var newItem = new MoreTimeRequest {
                 RequestTimeStamp = _clock.Now.AddMinutes(negativeTimeDifference),
@@ -125,6 +126,22 @@ namespace TimeTravelApi.Controllers
                 "GetAlert", 
                 new { userId = newRequest.UserId }, 
                 newItem);
+        }
+
+        private void CancelAnyUnexpiredRequestsForThisUser(string userId)
+        {
+            var unexpiredRequestsForThisUser = _timeRequestData
+                .AllTimeRequests(_dbContext)
+                .Where(x => x.UserId == userId && (x.Expired == false || x.Alerted == false))
+                .ToList();
+
+            foreach (var request in unexpiredRequestsForThisUser)
+            {
+                request.Expired = true;
+                request.Alerted = true;
+                _timeRequestData.UpdateTimeRequest(_dbContext, request);
+            }
+            _timeRequestData.SaveChanges(_dbContext);
         }
     }
 }
