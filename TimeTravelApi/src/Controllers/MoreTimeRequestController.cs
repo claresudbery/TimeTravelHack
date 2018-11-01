@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TimeTravelApi.Models;
 using System;
+using TimeTravelApi.Utils;
 
 namespace TimeTravelApi.Controllers
 {

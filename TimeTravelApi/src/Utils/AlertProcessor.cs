@@ -1,6 +1,7 @@
 using System;
+using TimeTravelApi.Models;
 
-namespace TimeTravelApi.Models
+namespace TimeTravelApi.Utils
 {
     public class AlertProcessor
     {
