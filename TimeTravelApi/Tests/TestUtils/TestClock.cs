@@ -19,7 +19,7 @@ namespace TimeTravelApi.Tests.TestUtils
 
         public DateTime Now
         {
-            get { return DateTime.Now; }
+            get { return _currentDateTime; }
         }
     }
 }

@@ -50,6 +50,7 @@ namespace TimeTravelApi.Tests
                 RequestTimeStamp = testTime,
                 UserId = userId
             };
+            _testClock.SetDateTime(testTime);
             _controller.Create(timeRequest);
 
             // Act

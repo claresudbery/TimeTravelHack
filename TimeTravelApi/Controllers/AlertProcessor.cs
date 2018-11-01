@@ -51,7 +51,8 @@ namespace TimeTravelApi.Models
             int accumulatedTime,
             ITimeTravelClock clock)
         {
-            var timeDifference = clock.Now.AddMinutes(-accumulatedTime)
+            var timeNow = clock.Now;
+            var timeDifference = timeNow.AddMinutes(-accumulatedTime)
                                          .TimeOfDay.Minutes - requestTimestamp.TimeOfDay.Minutes;
             if (timeDifference < 0)
             {
