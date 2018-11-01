@@ -15,6 +15,7 @@ namespace TimeTravelApi.Tests
         private FakeTimeRequestData _timeRequestData;
         private MoreTimeRequestController _controller;
         private TestClock _testClock;
+        private ITimeTracker _timeTracker;
         private MoreTimeRequestContext _dbDummyContext;
 
         [OneTimeSetUp]
@@ -22,18 +23,21 @@ namespace TimeTravelApi.Tests
         {
             _timeRequestData = new FakeTimeRequestData();
             _testClock = new TestClock();
+            _timeTracker = new TimeTracker();
             _dbDummyContext = new MoreTimeRequestContext(new DbContextOptions<MoreTimeRequestContext>());
 
             _controller = new MoreTimeRequestController(
                 _dbDummyContext,
                 _timeRequestData,
-                _testClock);
+                _testClock,
+                _timeTracker);
         }
 
         [SetUp]
         public void Setup()
         {
             _timeRequestData.RemoveAllTimeRequests();
+            _timeTracker.AccumulatedTimeDifference = 0;
         }
 
         private void CreateRequestViaController(
@@ -66,10 +70,18 @@ namespace TimeTravelApi.Tests
             _timeRequestData.AddTimeRequest(_dbDummyContext, timeRequest);
         }
 
+        private void UserAlreadyAlerted(DateTime startTime, int requestLengthInMinutes, string userId)
+        {
+            var requestTime = startTime.AddMinutes(requestLengthInMinutes);
+            _testClock.SetDateTime(requestTime);
+            _controller.GetAlert(userId);
+        }
+
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
         [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
         [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
         [TestCase(true, false, false, TestName = "TimeIsUp_CalledByOtherUser_AlertIsFalse")]
+        [Parallelizable(ParallelScope.None)]
         public void GivenRequestExists_WhenGetAlertCalled_ThenAlertIsOnlyReturnedWhenAppropriate(
             bool timeIsUp,
             bool calledByRequester,
@@ -80,11 +92,11 @@ namespace TimeTravelApi.Tests
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
             CreateRequestViaController(requestLengthInMinutes, startTime, userId);
-            var alertTimeDifference = timeIsUp ? requestLengthInMinutes : requestLengthInMinutes - 10;
-            var alertTime = startTime.AddMinutes(alertTimeDifference);
+            var requestTimeDifference = timeIsUp ? requestLengthInMinutes : requestLengthInMinutes - 10;
+            var requestTime = startTime.AddMinutes(requestTimeDifference);
 
             // Act
-            _testClock.SetDateTime(alertTime);
+            _testClock.SetDateTime(requestTime);
             ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(calledByRequester ? userId : "Some other user");
 
             // Assert
@@ -93,6 +105,7 @@ namespace TimeTravelApi.Tests
 
         [TestCase(true, TestName = "UserAlreadyAlerted_CalledByRequester_AlertIsFalse")]
         [TestCase(false, TestName = "UserAlreadyAlerted_CalledByOtherUser_AlertIsFalse")]
+        [Parallelizable(ParallelScope.None)]
         public void GivenRequestExistsAndUserAlreadyAlerted_WhenGetAlertCalled_ThenAlertIsFalse(
             bool calledByRequester)
         {
@@ -100,15 +113,41 @@ namespace TimeTravelApi.Tests
             var requestLengthInMinutes = 30;
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
-            CreateRequestInternally(requestLengthInMinutes, startTime, userId, true);
-            var alertTime = startTime.AddMinutes(requestLengthInMinutes);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+            UserAlreadyAlerted(startTime, requestLengthInMinutes, userId);
 
             // Act
-            _testClock.SetDateTime(alertTime);
             ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(calledByRequester ? userId : "Some other user");
 
             // Assert
             Assert.AreEqual(false, alertAction.Value.Alert);
+        }
+
+        [TestCase(0, TimeType.RequestStartTime, TestName = "TimeIsUp_TimeRequested_TimeIsRequestStartTime")]
+        [TestCase(-1, TimeType.CurrentTime, TestName = "TimeIsNotUp_TimeRequested_TimeIsCurrentTime")]
+        [TestCase(10, TimeType.RequestStartTime, TestName = "TimeWasUpAWhileAgo_TimeRequested_TimeIsRequestStartTime")]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenRequestExists_WhenTimeRequested_ThenCorrectTimeIsReturned(
+            int endTimeOffsetInMinutes,
+            TimeType expectedTimeType)
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            _testClock.SetDateTime(startTime);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+            var requestTime = startTime.AddMinutes(requestLengthInMinutes + endTimeOffsetInMinutes);
+
+            // Act
+            _testClock.SetDateTime(requestTime);
+            ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId);
+
+            // Assert
+            var expectedTime = expectedTimeType == TimeType.CurrentTime ? requestTime : startTime;
+            Assert.AreEqual(expectedTime.Hour, timeAction.Value.NewHours);
+            Assert.AreEqual(expectedTime.Minute, timeAction.Value.NewMinutes);
+            Assert.AreEqual(expectedTime.Second, timeAction.Value.NewSeconds);
         }
     }
 }

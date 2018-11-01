@@ -43,5 +43,10 @@ namespace TimeTravelApi.Tests.TestUtils
         {
             _moreTimeRequests.Clear();
         }
+
+        public MoreTimeRequest LastTimeRequest()
+        {
+            return _moreTimeRequests.Last();
+        }
     }
 }
