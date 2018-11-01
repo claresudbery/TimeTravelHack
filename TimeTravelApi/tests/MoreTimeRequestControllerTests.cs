@@ -48,42 +48,6 @@ namespace TimeTravelApi.Tests
             _controller.Create(timeRequest);
         }
 
-        [Test]
-        public void GivenRequestExistsAndTimeIsUp_WhenGetAlertCalledByRequester_ThenAlertIsReturned()
-        {
-            // Arrange
-            var requestLengthInMinutes = 30;
-            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
-            var userId = "User01";
-            CreateRequest(requestLengthInMinutes, startTime, userId);
-            var alertTime = startTime.AddMinutes(requestLengthInMinutes);
-
-            // Act
-            _testClock.SetDateTime(alertTime);
-            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(userId);
-
-            // Assert
-            Assert.True(alertAction.Value.Alert);
-        }
-
-        [Test]
-        public void GivenRequestExistsAndTimeIsNotUp_WhenGetAlertCalledByRequester_ThenAlertIsNotReturned()
-        {
-            // Arrange
-            var requestLengthInMinutes = 30;
-            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
-            var userId = "User01";
-            CreateRequest(requestLengthInMinutes, startTime, userId);
-            var alertTime = startTime.AddMinutes(requestLengthInMinutes - 10);
-
-            // Act
-            _testClock.SetDateTime(alertTime);
-            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(userId);
-
-            // Assert
-            Assert.False(alertAction.Value.Alert);
-        }
-
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
         [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
         [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
