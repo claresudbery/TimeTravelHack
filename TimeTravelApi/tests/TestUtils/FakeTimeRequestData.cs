@@ -7,6 +7,7 @@ namespace TimeTravelApi.Tests.TestUtils
     public class FakeTimeRequestData : ITimeRequestData
     {
         private List<MoreTimeRequest> _moreTimeRequests;
+        private int _idIncrementer = 0;
 
         public FakeTimeRequestData()
         {
@@ -25,6 +26,8 @@ namespace TimeTravelApi.Tests.TestUtils
 
         public void AddTimeRequest(MoreTimeRequestContext context, MoreTimeRequest moreTimeRequest)
         {
+            _idIncrementer++;
+            moreTimeRequest.Id = _idIncrementer;
             _moreTimeRequests.Add(moreTimeRequest);
         }
 
