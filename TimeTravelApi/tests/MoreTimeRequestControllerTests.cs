@@ -69,14 +69,14 @@ namespace TimeTravelApi.Tests
             _timeRequestData.AddTimeRequest(_dbDummyContext, timeRequest);
         }
 
-        private void UserAlreadyAlerted(DateTime startTime, int requestLengthInMinutes, string userId)
+        private void AlertUser(DateTime startTime, int requestLengthInMinutes, string userId)
         {
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
             _testClock.SetDateTime(requestTime);
             _controller.GetAlert(userId);
         }
 
-        private void RequestAlreadyExpired(DateTime startTime, int requestLengthInMinutes, string userId)
+        private void ExpireRequest(DateTime startTime, int requestLengthInMinutes, string userId)
         {
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
             _testClock.SetDateTime(requestTime);
@@ -137,7 +137,7 @@ namespace TimeTravelApi.Tests
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
             CreateRequestViaController(requestLengthInMinutes, startTime, userId);
-            UserAlreadyAlerted(startTime, requestLengthInMinutes, userId);
+            AlertUser(startTime, requestLengthInMinutes, userId);
 
             // Act
             ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(calledByRequester ? userId : "Some other user");
@@ -181,7 +181,7 @@ namespace TimeTravelApi.Tests
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
             CreateRequestViaController(requestLengthInMinutes, startTime, userId);
-            RequestAlreadyExpired(startTime, requestLengthInMinutes, userId);
+            ExpireRequest(startTime, requestLengthInMinutes, userId);
             var currentTime = startTime.AddMinutes(requestLengthInMinutes + 10);
 
             // Act
@@ -189,11 +189,156 @@ namespace TimeTravelApi.Tests
             ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId);
 
             // Assert
-            var negativeRequestLength = -requestLengthInMinutes;
+            var negativeRequestLength = requestLengthInMinutes * -1;
             var adjustedTime = currentTime.AddMinutes(negativeRequestLength);
             Assert.AreEqual(adjustedTime.Hour, timeAction.Value.NewHours);
             Assert.AreEqual(adjustedTime.Minute, timeAction.Value.NewMinutes);
             Assert.AreEqual(adjustedTime.Second, timeAction.Value.NewSeconds);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenPreviousRequestsHaveNotExpired_WhenNewRequestMade_ThenPreviousUnexpiredRequestsWillNotResetTheClock()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime1 = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequestViaController(requestLengthInMinutes, startTime1, userId);
+            // Add a second request
+            var startTime2 = startTime1.AddMinutes(1);
+            CreateRequestViaController(requestLengthInMinutes, startTime2, userId);
+            // Add a third request - this one should override the other two.
+            var startTime3 = startTime1.AddMinutes(2);
+            var shorterRequestLength = requestLengthInMinutes - 10;
+            CreateRequestViaController(shorterRequestLength, startTime3, userId);
+            // Get the third request to reset the clock.
+            ExpireRequest(startTime3, shorterRequestLength, userId);
+
+            // Act
+            // Make a time request at the time each request's time is up, 
+            // and add on extra time for the other two requests in case the 
+            // accumulated time difference is messing things up.
+            var firstExpirationTime = startTime1.AddMinutes(requestLengthInMinutes + requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(firstExpirationTime);
+            ActionResult<TimeAndAlert> firstExpirationResult = _controller.GetTime(userId);
+            // Second request
+            var secondExpirationTime = startTime2.AddMinutes(requestLengthInMinutes + requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(secondExpirationTime);
+            ActionResult<TimeAndAlert> secondExpirationResult = _controller.GetTime(userId);
+
+            // Assert
+            var negativeTimeAdjustment = shorterRequestLength * -1;
+            // First time should only be adjusted by the length of the third request.
+            var expectedFirstResult = firstExpirationTime.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedFirstResult.Hour, firstExpirationResult.Value.NewHours);
+            Assert.AreEqual(expectedFirstResult.Minute, firstExpirationResult.Value.NewMinutes);
+            Assert.AreEqual(expectedFirstResult.Second, firstExpirationResult.Value.NewSeconds);
+            // Second time should only be adjusted by the length of the third request.
+            var expectedSecondResult = secondExpirationTime.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedSecondResult.Hour, secondExpirationResult.Value.NewHours);
+            Assert.AreEqual(expectedSecondResult.Minute, secondExpirationResult.Value.NewMinutes);
+            Assert.AreEqual(expectedSecondResult.Second, secondExpirationResult.Value.NewSeconds);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenPreviousRequestsHaveNotExpired_WhenNewRequestMade_ThenPreviousUnexpiredRequestsWillNotAlert()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime1 = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequestViaController(requestLengthInMinutes, startTime1, userId);
+            // Add a second request
+            var startTime2 = startTime1.AddMinutes(1);
+            CreateRequestViaController(requestLengthInMinutes, startTime2, userId);
+            // Add a third request - this one should override the other two.
+            var startTime3 = startTime1.AddMinutes(2);
+            var shorterRequestLength = requestLengthInMinutes - 10;
+            CreateRequestViaController(shorterRequestLength, startTime3, userId);
+            // Get the third request to reset the clock.
+            AlertUser(startTime3, shorterRequestLength, userId);
+
+            // Act
+            // Make a time request at the time each request's time is up, 
+            // and add on extra time for the other two requests in case the 
+            // accumulated time difference is messing things up.
+            var firstExpirationTime = startTime1.AddMinutes(requestLengthInMinutes + requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(firstExpirationTime);
+            ActionResult<TimeAndAlert> firstAlertResult = _controller.GetAlert(userId);
+            // Second request
+            var secondExpirationTime = startTime2.AddMinutes(requestLengthInMinutes + requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(secondExpirationTime);
+            ActionResult<TimeAndAlert> secondAlertResult = _controller.GetAlert(userId);
+
+            // Assert
+            Assert.AreEqual(false, firstAlertResult.Value.Alert);
+            Assert.AreEqual(false, secondAlertResult.Value.Alert);
+        }
+
+        // !! Tis doesn't really make sense but this is here to record that nonetheless this is how it currently works !!
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOtherUserRequestHasNotExpired_WhenNewOverlappingRequestExpires_ThenPreviousRequestCanStillResetClockLater()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime1 = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId01 = "User01";
+            var userId02 = "User02";
+            CreateRequestViaController(requestLengthInMinutes, startTime1, userId01);
+            // Add a second request from a different user
+            var startTime2 = startTime1.AddMinutes(1);
+            var shorterRequestLength = requestLengthInMinutes - 10;
+            CreateRequestViaController(shorterRequestLength, startTime2, userId02);
+            // Get the second request to reset the clock.
+            ExpireRequest(startTime2, shorterRequestLength, userId02);
+
+            // Act
+            // Make a time request at the time the first request's time is up, 
+            // and add on extra time for the other request in case the 
+            // accumulated time difference is messing things up.
+            var expirationTime = startTime1.AddMinutes(requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(expirationTime);
+            ActionResult<TimeAndAlert> expirationResult = _controller.GetTime(userId01);
+
+            // Assert
+            var negativeTimeAdjustment = (shorterRequestLength + requestLengthInMinutes) * -1;
+            // Time should be adjusted by the length of both requests.
+            var expectedResult = expirationTime.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedResult.Hour, expirationResult.Value.NewHours);
+            Assert.AreEqual(expectedResult.Minute, expirationResult.Value.NewMinutes);
+            Assert.AreEqual(expectedResult.Second, expirationResult.Value.NewSeconds);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOtherUserRequestHasNotExpired_WhenNewUserMakesRequest_ThenOtherUserRequestWillStillAlert()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime1 = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId01 = "User01";
+            var userId02 = "User02";
+            CreateRequestViaController(requestLengthInMinutes, startTime1, userId01);
+            // Add a second request from a different user
+            var startTime2 = startTime1.AddMinutes(1);
+            var shorterRequestLength = requestLengthInMinutes - 10;
+            CreateRequestViaController(shorterRequestLength, startTime2, userId02);
+            // Get the second request to reset the clock.
+            AlertUser(startTime2, shorterRequestLength, userId02);
+
+            // Act
+            // Make a time request at the time the first request's time is up, 
+            // and add on extra time for the other request in case the 
+            // accumulated time difference is messing things up.
+            var expirationTime = startTime1.AddMinutes(requestLengthInMinutes + shorterRequestLength);
+            _testClock.SetDateTime(expirationTime);
+            ActionResult<TimeAndAlert> alertResult = _controller.GetAlert(userId01);;
+
+            // Assert
+            Assert.AreEqual(true, alertResult.Value.Alert);
         }
     }
 }
