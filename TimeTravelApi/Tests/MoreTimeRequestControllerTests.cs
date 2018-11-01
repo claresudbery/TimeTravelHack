@@ -23,8 +23,9 @@ namespace TimeTravelApi.Tests
             _testClock = new TestClock();
             _controller = new MoreTimeRequestController(
                 new MoreTimeRequestContext(
-                    new DbContextOptions<MoreTimeRequestContext>()));
-            _controller.InjectNewDependencies(_timeRequestData, _testClock);
+                    new DbContextOptions<MoreTimeRequestContext>()),
+                _timeRequestData,
+                _testClock);
         }
 
         [SetUp]

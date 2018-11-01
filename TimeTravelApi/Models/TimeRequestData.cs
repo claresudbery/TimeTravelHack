@@ -5,36 +5,29 @@ namespace TimeTravelApi.Models
 {
     public class TimeRequestData : ITimeRequestData
     {
-        private readonly MoreTimeRequestContext _context;
-
-        public TimeRequestData(MoreTimeRequestContext context)
+        public void SaveChanges(MoreTimeRequestContext context)
         {
-            _context = context;
+            context.SaveChanges();
         }
 
-        public void SaveChanges()
+        public int NumTimeRequests(MoreTimeRequestContext context)
         {
-            _context.SaveChanges();
+            return context.MoreTimeRequests.Count();
         }
 
-        public int NumTimeRequests()
+        public void AddTimeRequest(MoreTimeRequestContext context, MoreTimeRequest moreTimeRequest)
         {
-            return _context.MoreTimeRequests.Count();
+            context.MoreTimeRequests.Add(moreTimeRequest);
         }
 
-        public void AddTimeRequest(MoreTimeRequest moreTimeRequest)
+        public List<MoreTimeRequest> AllTimeRequests(MoreTimeRequestContext context)
         {
-            _context.MoreTimeRequests.Add(moreTimeRequest);
+            return context.MoreTimeRequests.ToList();
         }
 
-        public List<MoreTimeRequest> AllTimeRequests()
+        public void UpdateTimeRequest(MoreTimeRequestContext context, MoreTimeRequest request)
         {
-            return _context.MoreTimeRequests.ToList();
-        }
-
-        public void UpdateTimeRequest(MoreTimeRequest request)
-        {
-            _context.MoreTimeRequests.Update(request);
+            context.MoreTimeRequests.Update(request);
         }
     }
 }

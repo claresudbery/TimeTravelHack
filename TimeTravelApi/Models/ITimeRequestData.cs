@@ -4,10 +4,10 @@ namespace TimeTravelApi.Models
 {
     public interface ITimeRequestData
     {
-        void SaveChanges();
-        int NumTimeRequests();
-        void AddTimeRequest(MoreTimeRequest moreTimeRequest);
-        List<MoreTimeRequest> AllTimeRequests();
-        void UpdateTimeRequest(MoreTimeRequest request);
+        void SaveChanges(MoreTimeRequestContext context);
+        int NumTimeRequests(MoreTimeRequestContext context);
+        void AddTimeRequest(MoreTimeRequestContext context, MoreTimeRequest moreTimeRequest);
+        List<MoreTimeRequest> AllTimeRequests(MoreTimeRequestContext context);
+        void UpdateTimeRequest(MoreTimeRequestContext context, MoreTimeRequest request);
     }
 }

@@ -13,27 +13,27 @@ namespace TimeTravelApi.Tests.TestUtils
             _moreTimeRequests = new List<MoreTimeRequest>();
         }
 
-        public void SaveChanges()
+        public void SaveChanges(MoreTimeRequestContext context)
         {
             // No need to do anything because we are not using Entity Framework.
         }
 
-        public int NumTimeRequests()
+        public int NumTimeRequests(MoreTimeRequestContext context)
         {
             return _moreTimeRequests.Count;
         }
 
-        public void AddTimeRequest(MoreTimeRequest moreTimeRequest)
+        public void AddTimeRequest(MoreTimeRequestContext context, MoreTimeRequest moreTimeRequest)
         {
             _moreTimeRequests.Add(moreTimeRequest);
         }
 
-        public List<MoreTimeRequest> AllTimeRequests()
+        public List<MoreTimeRequest> AllTimeRequests(MoreTimeRequestContext context)
         {
             return _moreTimeRequests;
         }
 
-        public void UpdateTimeRequest(MoreTimeRequest request)
+        public void UpdateTimeRequest(MoreTimeRequestContext context, MoreTimeRequest request)
         {
             var timeRequestToUpdate = _moreTimeRequests.Where(x => x.Id == request.Id).First();
             timeRequestToUpdate.Update(request);
