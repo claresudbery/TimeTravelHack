@@ -3,6 +3,7 @@
     public enum TimeType
     {
         RequestStartTime,
-        CurrentTime
+        CurrentTime,
+        CurrentTimeMinusAccumulatedDifference
     }
 }

@@ -78,7 +78,6 @@ namespace TimeTravelApi.Controllers
         public ActionResult<TimeAndAlert> GetTime(String userId)
         {
             var alertProcessor = new AlertProcessor();
-            var newTime = _clock.Now.AddMinutes(-_timeTracker.AccumulatedTimeDifference);
 
             var justExpiredTimeRequests = _timeRequestData
                 .AllTimeRequests(_dbContext)
@@ -87,15 +86,11 @@ namespace TimeTravelApi.Controllers
             
             if (justExpiredTimeRequests.Count() > 0)
             {
-                var earliestExpiredRequestStartTime = justExpiredTimeRequests
-                    .Select(x => x.RequestTimeStamp)
-                    .Min();
-                newTime = earliestExpiredRequestStartTime;
+                var earliestExpiredRequestLength = justExpiredTimeRequests
+                    .Select(x => x.LengthInMinutes)
+                    .Max();
 
-                var timeDifference = alertProcessor
-                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, _timeTracker.AccumulatedTimeDifference, _clock);
-
-                _timeTracker.AccumulatedTimeDifference += timeDifference;
+                _timeTracker.AccumulatedTimeDifference += earliestExpiredRequestLength;
 
                 foreach (var request in justExpiredTimeRequests) 
                 {
@@ -105,6 +100,8 @@ namespace TimeTravelApi.Controllers
                 _timeRequestData.SaveChanges(_dbContext);
             }
 
+            var negativeTimeDifference = _timeTracker.AccumulatedTimeDifference * -1;
+            var newTime = _clock.Now.AddMinutes(negativeTimeDifference);
             return new TimeAndAlert {NewHours = newTime.TimeOfDay.Hours,
                                     NewMinutes = newTime.TimeOfDay.Minutes,
                                     NewSeconds = newTime.TimeOfDay.Seconds};
@@ -113,8 +110,9 @@ namespace TimeTravelApi.Controllers
         [HttpPost]
         public IActionResult Create(MoreTimeRequest newRequest)
         {
+            var negativeTimeDifference = _timeTracker.AccumulatedTimeDifference * -1;
             var newItem = new MoreTimeRequest {
-                RequestTimeStamp = _clock.Now.AddMinutes(-_timeTracker.AccumulatedTimeDifference),
+                RequestTimeStamp = _clock.Now.AddMinutes(negativeTimeDifference),
                 Expired = false,
                 Alerted = false,
                 LengthInMinutes = newRequest.LengthInMinutes,

@@ -83,6 +83,23 @@ namespace TimeTravelApi.Tests
             _controller.GetTime(userId);
         }
 
+        private DateTime GetExpectedTime(
+            TimeType expectedTimeType,
+            DateTime startTime,
+            DateTime requestTime)
+        {
+            DateTime expectedTime = DateTime.Now;
+            var negativeTimeDifference = _timeTracker.AccumulatedTimeDifference * -1;
+            switch (expectedTimeType)
+            {
+                case TimeType.CurrentTime: expectedTime = requestTime; break;
+                case TimeType.RequestStartTime: expectedTime = startTime; break;
+                case TimeType.CurrentTimeMinusAccumulatedDifference:
+                    expectedTime = requestTime.AddMinutes(negativeTimeDifference); break;
+            }
+            return expectedTime;
+        }
+
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
         [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
         [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
@@ -131,7 +148,7 @@ namespace TimeTravelApi.Tests
 
         [TestCase(0, TimeType.RequestStartTime, TestName = "TimeIsUp_TimeRequested_TimeIsRequestStartTime")]
         [TestCase(-1, TimeType.CurrentTime, TestName = "TimeIsNotUp_TimeRequested_TimeIsCurrentTime")]
-        [TestCase(10, TimeType.RequestStartTime, TestName = "TimeWasUpAWhileAgo_TimeRequested_TimeIsRequestStartTime")]
+        [TestCase(10, TimeType.CurrentTimeMinusAccumulatedDifference, TestName = "TimeWasUpAWhileAgo_TimeRequested_TimeIsRequestStartTime")]
         [Parallelizable(ParallelScope.None)]
         public void GivenRequestExists_WhenTimeRequested_ThenCorrectTimeIsReturned(
             int endTimeOffsetInMinutes,
@@ -149,7 +166,7 @@ namespace TimeTravelApi.Tests
             ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId);
 
             // Assert
-            var expectedTime = expectedTimeType == TimeType.CurrentTime ? requestTime : startTime;
+            DateTime expectedTime = GetExpectedTime(expectedTimeType, startTime, requestTime);
             Assert.AreEqual(expectedTime.Hour, timeAction.Value.NewHours);
             Assert.AreEqual(expectedTime.Minute, timeAction.Value.NewMinutes);
             Assert.AreEqual(expectedTime.Second, timeAction.Value.NewSeconds);
