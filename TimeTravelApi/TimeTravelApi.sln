@@ -1,7 +1,9 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTravelApi", "src/TimeTravelApi.csproj", "{F7DE2732-F910-475B-A26C-3E82BEBF7604}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTravelApi", "src\TimeTravelApi.csproj", "{F7DE2732-F910-475B-A26C-3E82BEBF7604}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeTravelApi.Tests", "tests\TimeTravelApi.Tests.csproj", "{168BC830-2D0D-4FCD-9674-2DE28E661EFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,5 +15,9 @@ Global
 		{F7DE2732-F910-475B-A26C-3E82BEBF7604}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7DE2732-F910-475B-A26C-3E82BEBF7604}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7DE2732-F910-475B-A26C-3E82BEBF7604}.Release|Any CPU.Build.0 = Release|Any CPU
+		{168BC830-2D0D-4FCD-9674-2DE28E661EFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{168BC830-2D0D-4FCD-9674-2DE28E661EFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{168BC830-2D0D-4FCD-9674-2DE28E661EFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{168BC830-2D0D-4FCD-9674-2DE28E661EFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
