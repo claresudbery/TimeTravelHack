@@ -14,7 +14,7 @@ namespace TimeTravelApi.Tests
     {
         private FakeTimeRequestData _timeRequestData;
         private MoreTimeRequestController _controller;
-        private TestClock _testClock;
+        private FakeClock _testClock;
         private ITimeTracker _timeTracker;
         private MoreTimeRequestContext _dbDummyContext;
 
@@ -22,7 +22,7 @@ namespace TimeTravelApi.Tests
         public void OneTimeSetUp()
         {
             _timeRequestData = new FakeTimeRequestData();
-            _testClock = new TestClock();
+            _testClock = new FakeClock();
             _timeTracker = new TimeTracker();
             _dbDummyContext = new MoreTimeRequestContext(new DbContextOptions<MoreTimeRequestContext>());
 

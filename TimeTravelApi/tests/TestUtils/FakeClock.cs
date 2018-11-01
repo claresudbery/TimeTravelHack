@@ -3,11 +3,11 @@ using TimeTravelApi.Models;
 
 namespace TimeTravelApi.Tests.TestUtils
 {
-    public class TestClock : ITimeTravelClock
+    public class FakeClock : ITimeTravelClock
     {
         private DateTime _currentDateTime;
 
-        public TestClock()
+        public FakeClock()
         {
             _currentDateTime = DateTime.Now;
         }
