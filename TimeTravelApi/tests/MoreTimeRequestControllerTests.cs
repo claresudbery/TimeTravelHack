@@ -47,7 +47,6 @@ namespace TimeTravelApi.Tests
         {
             var timeRequest = new TimeRequestModelBuilder()
                 .WithLengthInMinutes(requestLengthInMinutes)
-                .WithRequestTimeStamp(startTime)
                 .WithUserId(userId)
                 .Model();
             _testClock.SetDateTime(startTime);
@@ -75,6 +74,13 @@ namespace TimeTravelApi.Tests
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
             _testClock.SetDateTime(requestTime);
             _controller.GetAlert(userId);
+        }
+
+        private void RequestAlreadyExpired(DateTime startTime, int requestLengthInMinutes, string userId)
+        {
+            var requestTime = startTime.AddMinutes(requestLengthInMinutes);
+            _testClock.SetDateTime(requestTime);
+            _controller.GetTime(userId);
         }
 
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
@@ -135,7 +141,6 @@ namespace TimeTravelApi.Tests
             var requestLengthInMinutes = 30;
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
-            _testClock.SetDateTime(startTime);
             CreateRequestViaController(requestLengthInMinutes, startTime, userId);
             var requestTime = startTime.AddMinutes(requestLengthInMinutes + endTimeOffsetInMinutes);
 
@@ -148,6 +153,30 @@ namespace TimeTravelApi.Tests
             Assert.AreEqual(expectedTime.Hour, timeAction.Value.NewHours);
             Assert.AreEqual(expectedTime.Minute, timeAction.Value.NewMinutes);
             Assert.AreEqual(expectedTime.Second, timeAction.Value.NewSeconds);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenRequestHasAlreadyExpired_WhenTimeRequested_ThenCurrentTimeMinusRequestLengthReturned()
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+            RequestAlreadyExpired(startTime, requestLengthInMinutes, userId);
+            var currentTime = startTime.AddMinutes(requestLengthInMinutes + 10);
+
+            // Act
+            _testClock.SetDateTime(currentTime);
+            ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId);
+
+            // Assert
+            var negativeRequestLength = -requestLengthInMinutes;
+            var adjustedTime = currentTime.AddMinutes(negativeRequestLength);
+            Assert.AreEqual(adjustedTime.Hour, timeAction.Value.NewHours);
+            Assert.AreEqual(adjustedTime.Minute, timeAction.Value.NewMinutes);
+            Assert.AreEqual(adjustedTime.Second, timeAction.Value.NewSeconds);
         }
     }
 }
