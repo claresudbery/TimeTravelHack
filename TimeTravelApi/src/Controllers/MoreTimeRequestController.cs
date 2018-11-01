@@ -11,19 +11,21 @@ namespace TimeTravelApi.Controllers
     [ApiController]
     public class MoreTimeRequestController : ControllerBase
     {
-        private static int _accumulatedTimeDifference = 0;
         private readonly ITimeTravelClock _clock;
         private readonly ITimeRequestData _timeRequestData;
+        private readonly ITimeTracker _timeTracker;
         private readonly MoreTimeRequestContext _dbContext;
 
         public MoreTimeRequestController(
             MoreTimeRequestContext context,
             ITimeRequestData timeRequestData,
-            ITimeTravelClock timeTravelClock)
+            ITimeTravelClock timeTravelClock,
+            ITimeTracker timeTracker)
         {
             _dbContext = context;
             _timeRequestData = timeRequestData;
             _clock = timeTravelClock;
+            _timeTracker = timeTracker;
             if (_timeRequestData.NumTimeRequests(_dbContext) == 0)
             {
                 // Create a new MoreTimeRequest if collection is empty,
@@ -55,7 +57,7 @@ namespace TimeTravelApi.Controllers
             var timeRequestsReadyForAlert = _timeRequestData
                 .AllTimeRequests(_dbContext)
                 .Where(x => x.UserId == userId)
-                .Where(x => alertProcessor.IsTimeRequestReadyForAlert(x, _accumulatedTimeDifference, _clock))
+                .Where(x => alertProcessor.IsTimeRequestReadyForAlert(x, _timeTracker.AccumulatedTimeDifference, _clock))
                 .ToList();
 
             if (timeRequestsReadyForAlert.Count() > 0)
@@ -76,11 +78,11 @@ namespace TimeTravelApi.Controllers
         public ActionResult<TimeAndAlert> GetTime(String userId)
         {
             var alertProcessor = new AlertProcessor();
-            var newTime = _clock.Now.AddMinutes(-_accumulatedTimeDifference);
+            var newTime = _clock.Now.AddMinutes(-_timeTracker.AccumulatedTimeDifference);
 
             var justExpiredTimeRequests = _timeRequestData
                 .AllTimeRequests(_dbContext)
-                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, _accumulatedTimeDifference, _clock))
+                .Where(x => alertProcessor.HasTimeRequestJustExpired(x, _timeTracker.AccumulatedTimeDifference, _clock))
                 .ToList();
             
             if (justExpiredTimeRequests.Count() > 0)
@@ -91,9 +93,9 @@ namespace TimeTravelApi.Controllers
                 newTime = earliestExpiredRequestStartTime;
 
                 var timeDifference = alertProcessor
-                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, _accumulatedTimeDifference, _clock);
+                    .GetTimeDifferenceSinceRequest(earliestExpiredRequestStartTime, _timeTracker.AccumulatedTimeDifference, _clock);
 
-                _accumulatedTimeDifference += timeDifference;
+                _timeTracker.AccumulatedTimeDifference += timeDifference;
 
                 foreach (var request in justExpiredTimeRequests) 
                 {
@@ -112,7 +114,7 @@ namespace TimeTravelApi.Controllers
         public IActionResult Create(MoreTimeRequest newRequest)
         {
             var newItem = new MoreTimeRequest {
-                RequestTimeStamp = _clock.Now.AddMinutes(-_accumulatedTimeDifference),
+                RequestTimeStamp = _clock.Now.AddMinutes(-_timeTracker.AccumulatedTimeDifference),
                 Expired = false,
                 Alerted = false,
                 LengthInMinutes = newRequest.LengthInMinutes,

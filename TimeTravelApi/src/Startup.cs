@@ -19,6 +19,7 @@ namespace TimeTravelApi
 
             services.AddScoped<ITimeTravelClock, TimeTravelClock>();
             services.AddSingleton<ITimeRequestData, TimeRequestData>();
+            services.AddSingleton<ITimeTracker, TimeTracker>();
         }
 
         public void Configure(IApplicationBuilder app)
