@@ -7,6 +7,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using TimeTravelApi.Tests;
 
 namespace TimeTravelApi
 {
@@ -14,7 +15,29 @@ namespace TimeTravelApi
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            var doTesting = true;
+            if (doTesting)
+            {
+                runTests();
+            }
+            else
+            {
+                CreateWebHostBuilder(args).Build().Run();
+            }
+        }
+
+        private static void runTests()
+        {
+            runControllerTests();
+        }
+
+        private static void runControllerTests()
+        {
+            var controllerTests = new MoreTimeRequestControllerTests();
+            controllerTests.OneTimeSetUp();
+
+            controllerTests.Setup();
+            controllerTests.GivenRequestExistsAndTimeIsUp_WhenGetAlertCalledByRequester_ThenAlertIsReturned();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
