@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using TimeTravelApi.Controllers;
 using TimeTravelApi.Models;
+using TimeTravelApi.Tests.ModelBuilders;
 using TimeTravelApi.Tests.TestUtils;
 
 namespace TimeTravelApi.Tests
@@ -33,24 +34,29 @@ namespace TimeTravelApi.Tests
             _timeRequestData.RemoveAllTimeRequests();
         }
 
+        private void CreateRequest(
+            int requestLengthInMinutes,
+            DateTime startTime,
+            String userId)
+        {
+            var timeRequest = new TimeRequestModelBuilder()
+                .WithLengthInMinutes(requestLengthInMinutes)
+                .WithRequestTimeStamp(startTime)
+                .WithUserId(userId)
+                .Model();
+            _testClock.SetDateTime(startTime);
+            _controller.Create(timeRequest);
+        }
+
         [Test]
         public void GivenRequestExistsAndTimeIsUp_WhenGetAlertCalledByRequester_ThenAlertIsReturned()
         {
             // Arrange
             var requestLengthInMinutes = 30;
-            var testTime = new DateTime(2018, 10, 31, 12, 0, 0);
-            var alertTime = testTime.AddMinutes(requestLengthInMinutes);
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
-            var timeRequest = new MoreTimeRequest()
-            {
-                Alerted = false,
-                Expired = false,
-                LengthInMinutes = requestLengthInMinutes,
-                RequestTimeStamp = testTime,
-                UserId = userId
-            };
-            _testClock.SetDateTime(testTime);
-            _controller.Create(timeRequest);
+            CreateRequest(requestLengthInMinutes, startTime, userId);
+            var alertTime = startTime.AddMinutes(requestLengthInMinutes);
 
             // Act
             _testClock.SetDateTime(alertTime);
