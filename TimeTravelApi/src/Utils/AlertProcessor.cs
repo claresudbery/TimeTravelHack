@@ -52,13 +52,9 @@ namespace TimeTravelApi.Utils
             int accumulatedTime,
             ITimeTravelClock clock)
         {
-            var timeNow = clock.Now;
-            var timeDifference = timeNow.AddMinutes(-accumulatedTime)
-                                         .TimeOfDay.Minutes - requestTimestamp.TimeOfDay.Minutes;
-            if (timeDifference < 0)
-            {
-                timeDifference = timeDifference + 60;
-            }
+            var negativeTimeDifference = accumulatedTime * -1;
+            var timeNow = clock.Now.AddMinutes(negativeTimeDifference);
+            var timeDifference = Convert.ToInt32(timeNow.Subtract(requestTimestamp).TotalMinutes);
             return timeDifference;
         }
     }
