@@ -83,5 +83,30 @@ namespace TimeTravelApi.Tests
             // Assert
             Assert.False(alertAction.Value.Alert);
         }
+
+        [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
+        [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
+        [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
+        [TestCase(true, false, false, TestName = "TimeIsUp_CalledByOtherUser_AlertIsFalse")]
+        public void GivenRequestExists_WhenGetAlertCalled_ThenAlertIsOnlyReturnedWhenAppropriate(
+            bool timeIsUp,
+            bool calledByRequester,
+            bool expectedAlertValue)
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequest(requestLengthInMinutes, startTime, userId);
+            var alertTimeDifference = timeIsUp ? requestLengthInMinutes : requestLengthInMinutes - 10;
+            var alertTime = startTime.AddMinutes(alertTimeDifference);
+
+            // Act
+            _testClock.SetDateTime(alertTime);
+            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(calledByRequester ? userId : "Some other user");
+
+            // Assert
+            Assert.AreEqual(expectedAlertValue, alertAction.Value.Alert);
+        }
     }
 }
