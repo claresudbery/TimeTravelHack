@@ -15,15 +15,17 @@ namespace TimeTravelApi.Tests
         private FakeTimeRequestData _timeRequestData;
         private MoreTimeRequestController _controller;
         private TestClock _testClock;
+        private MoreTimeRequestContext _dbDummyContext;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             _timeRequestData = new FakeTimeRequestData();
             _testClock = new TestClock();
+            _dbDummyContext = new MoreTimeRequestContext(new DbContextOptions<MoreTimeRequestContext>());
+
             _controller = new MoreTimeRequestController(
-                new MoreTimeRequestContext(
-                    new DbContextOptions<MoreTimeRequestContext>()),
+                _dbDummyContext,
                 _timeRequestData,
                 _testClock);
         }
@@ -34,7 +36,7 @@ namespace TimeTravelApi.Tests
             _timeRequestData.RemoveAllTimeRequests();
         }
 
-        private void CreateRequest(
+        private void CreateRequestViaController(
             int requestLengthInMinutes,
             DateTime startTime,
             String userId)
@@ -46,6 +48,22 @@ namespace TimeTravelApi.Tests
                 .Model();
             _testClock.SetDateTime(startTime);
             _controller.Create(timeRequest);
+        }
+
+        private void CreateRequestInternally(
+            int requestLengthInMinutes,
+            DateTime startTime,
+            String userId,
+            bool alerted)
+        {
+            var timeRequest = new TimeRequestModelBuilder()
+                .WithLengthInMinutes(requestLengthInMinutes)
+                .WithRequestTimeStamp(startTime)
+                .WithUserId(userId)
+                .WithAlerted(alerted)
+                .Model();
+            _testClock.SetDateTime(startTime);
+            _timeRequestData.AddTimeRequest(_dbDummyContext, timeRequest);
         }
 
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
@@ -61,7 +79,7 @@ namespace TimeTravelApi.Tests
             var requestLengthInMinutes = 30;
             var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
             var userId = "User01";
-            CreateRequest(requestLengthInMinutes, startTime, userId);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
             var alertTimeDifference = timeIsUp ? requestLengthInMinutes : requestLengthInMinutes - 10;
             var alertTime = startTime.AddMinutes(alertTimeDifference);
 
@@ -71,6 +89,26 @@ namespace TimeTravelApi.Tests
 
             // Assert
             Assert.AreEqual(expectedAlertValue, alertAction.Value.Alert);
+        }
+
+        [TestCase(true, TestName = "UserAlreadyAlerted_CalledByRequester_AlertIsFalse")]
+        [TestCase(false, TestName = "UserAlreadyAlerted_CalledByOtherUser_AlertIsFalse")]
+        public void GivenRequestExistsAndUserAlreadyAlerted_WhenGetAlertCalled_ThenAlertIsFalse(
+            bool calledByRequester)
+        {
+            // Arrange
+            var requestLengthInMinutes = 30;
+            var startTime = new DateTime(2018, 10, 31, 12, 0, 0);
+            var userId = "User01";
+            CreateRequestInternally(requestLengthInMinutes, startTime, userId, true);
+            var alertTime = startTime.AddMinutes(requestLengthInMinutes);
+
+            // Act
+            _testClock.SetDateTime(alertTime);
+            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(calledByRequester ? userId : "Some other user");
+
+            // Assert
+            Assert.AreEqual(false, alertAction.Value.Alert);
         }
     }
 }
