@@ -1,0 +1,11 @@
+As with current code : 
+find all events which expire now 
+Mark them all expired 
+Time adjustment is longest time 
+New:
+Look for all outstanding unexpired events and subtract time adjustment from their length. 
+If adjustment > length, change length to 0. If length is now 0, Mark as expired.
+
+Do we have a test yet for when another request has expired but we are not expired yet? Clock should be adjusted. 
+
+Do we have a test yet for when other requests expired before we even started? Oh hang on, should our "start time" already contain previous adjustments??

@@ -294,7 +294,7 @@ namespace TimeTravelApi.Tests
             int expectedTimeAdjustment,
             bool iAskedFirst)
         {
-            CreateAndCheckTwoOverlappingTimeRequests(
+            CreateAndExpireTwoOverlappingTimeRequests(
                 overlappingRequestStart,
                 overlappingRequestLength,
                 myRequestStart,
@@ -318,7 +318,7 @@ namespace TimeTravelApi.Tests
             int expectedTimeAdjustment,
             bool iAskedFirst)
         {
-            CreateAndCheckTwoOverlappingTimeRequests(
+            CreateAndExpireTwoOverlappingTimeRequests(
                 overlappingRequestStart,
                 overlappingRequestLength,
                 myRequestStart,
@@ -346,13 +346,98 @@ namespace TimeTravelApi.Tests
             int expectedTimeAdjustment,
             bool iAskedFirst)
         {
-            CreateAndCheckTwoOverlappingTimeRequests(
+            CreateAndExpireTwoOverlappingTimeRequests(
                 overlappingRequestStart,
                 overlappingRequestLength,
                 myRequestStart,
                 myRequestLength,
                 expectedTimeAdjustment,
                 iAskedFirst);
+        }
+
+        [TestCase("10:00", 30, "10:10", 40,
+            "MyRequestNotExpiredAndLongerAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
+        [TestCase("10:00", 30, "9:50", 50,
+            "MyRequestNotExpiredAndLongerAndStartedBeforeOverlappingStartAndEndsdAfterOverlappingEnd_TimeAdjustedByOverlappingLength")]
+        [TestCase("10:00", 30, "10:00", 40,
+            "MyRequestNotExpiredAndLongerAndStartedAtOverlappingStart_TimeAdjustedByOverlappingLength")]
+        [TestCase("10:00", 30, "10:20", 30,
+            "MyRequestNotExpiredAndSameLengthAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
+        [TestCase("10:00", 30, "10:20", 20,
+            "MyRequestNotExpiredAndShorter_TimeAdjustedByOverlappingLength")]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenMyRequestHasNotExpiredButOverlappingRequestHasExpired_WhenIAskForTime_ThenTimeAdjustmentIsOverlappingRequestLength(
+            String overlappingRequestStart,
+            int overlappingRequestLength,
+            String myRequestStart,
+            int myRequestLength)
+        {
+            int expectedTimeAdjustment = overlappingRequestLength;
+
+            CreateAndCheckTwoOverlappingTimeRequestsButOnlyExpireOneOfThem(
+                overlappingRequestStart,
+                overlappingRequestLength,
+                myRequestStart,
+                myRequestLength,
+                expectedTimeAdjustment);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenMultipleExpiredAndUnexpiredOverlappingAndNonOverlappingRequests_WhenWeExpire_ThenTimeAdjustmentIsOverallAdjustment()
+        {
+            // Arrange
+            int timeAdjustmentBeforeWeExpire = CreateMultipleExpiredAndUnexpiredOverlappingAndNonOverlappingRequests();
+            var startTime = new DateTime(2018, 10, 31, 14, 50, 0);
+            int requestLengthInMinutes = 30;
+            String userId = "My user Id";
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+
+            // Act
+            DateTime returnedTimeAction = ExpireRequest(startTime, requestLengthInMinutes, userId);
+
+            // Assert
+            var negativeTimeAdjustment = timeAdjustmentBeforeWeExpire * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, returnedTimeAction.Hour);
+            Assert.AreEqual(expectedTime.Minute, returnedTimeAction.Minute);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOverlappingRequestHasExpiredButWeAreNotExpiredYet_WhenWeRequestTime_ThenTimeAdjustmentIsBasedOnExpiredRequest()
+        {
+            // Arrange
+            var overlappingStartTime = new DateTime(2018, 10, 31, 14, 50, 0);
+            int overlappingRequestLengthInMinutes = 30;
+            String userId01 = "UserId01";
+            String userId02 = "UserId02";
+            // First request:
+            CreateRequestViaController(overlappingRequestLengthInMinutes, overlappingStartTime, userId01);
+            ExpireRequest(overlappingStartTime, overlappingRequestLengthInMinutes, userId01);
+            // Our request:
+            int ourRequestLengthInMinutes = overlappingRequestLengthInMinutes + 10;
+            var ourStartTime = overlappingStartTime.AddMinutes(overlappingRequestLengthInMinutes - 10);
+            CreateRequestViaController(ourRequestLengthInMinutes, ourStartTime, userId02);
+
+            // Act
+            var requestTime = overlappingStartTime.AddMinutes(overlappingRequestLengthInMinutes + 10);
+            _testClock.SetDateTime(requestTime);
+            ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId02);
+
+            // Assert
+            var negativeTimeAdjustment = overlappingRequestLengthInMinutes * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, timeAction.Value.NewHours);
+            Assert.AreEqual(expectedTime.Minute, timeAction.Value.NewMinutes);
+        }
+
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOtherRequestsExpiredBeforeWeStarted_WhenWeExpire_ThenTimeAdjustmentIncludesPreviousRequests()
+        {
+            // This is just a placeholder - still need to write the test.
+            Assert.True(false);
         }
     }
 }

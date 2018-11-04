@@ -88,7 +88,7 @@ namespace TimeTravelApi.Tests
             return new DateTime(2018, 10, 31, hour, minute, 0);
         }
 
-        private void CreateAndCheckTwoOverlappingTimeRequests(
+        private void CreateAndExpireTwoOverlappingTimeRequests(
             String overlappingRequestStart,
             int overlappingRequestLength,
             String myRequestStart,
@@ -100,9 +100,9 @@ namespace TimeTravelApi.Tests
             // Start by creating the "overlapping" request
             DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
             var overlappingUserId = "User01";
-            var myUserId = "User02";
             CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
             // Now add "our" request
+            var myUserId = "User02";
             var myStartTime = GetDateTime(myRequestStart);
             CreateRequestViaController(myRequestLength, myStartTime, myUserId);
 
@@ -125,6 +125,84 @@ namespace TimeTravelApi.Tests
             var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
             Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
             Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
+        }
+
+        private void CreateAndCheckTwoOverlappingTimeRequestsButOnlyExpireOneOfThem(
+            String overlappingRequestStart,
+            int overlappingRequestLength,
+            String myRequestStart,
+            int myRequestLength,
+            int expectedTimeAdjustment)
+        {
+            // Arrange
+            // Start by creating the "overlapping" request
+            DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
+            var overlappingUserId = "User01";
+            CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
+            // Now add "our" request
+            var myUserId = "User02";
+            var myStartTime = GetDateTime(myRequestStart);
+            CreateRequestViaController(myRequestLength, myStartTime, myUserId);
+            // Expire the overlapping request
+            ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
+
+            // Act
+            // Now ask for the time before our request expires, but after the overlapping request expires.
+            var requestTime = myStartTime.AddMinutes(myRequestLength - 1);
+            _testClock.SetDateTime(requestTime);
+            ActionResult<TimeAndAlert> returnedTimeAction = _controller.GetTime(myUserId);
+
+            // Assert
+            var negativeTimeAdjustment = expectedTimeAdjustment * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, returnedTimeAction.Value.NewHours);
+            Assert.AreEqual(expectedTime.Minute, returnedTimeAction.Value.NewMinutes);
+        }
+
+        private void CreateAndExpireRequest(
+            String startTimeAsString,
+            int requestLengthInMinutes,
+            String userId)
+        {
+            DateTime startTime = GetDateTime(startTimeAsString);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+            ExpireRequest(startTime, requestLengthInMinutes, userId);
+        }
+
+        private void CreateRequestViaController(
+            String startTimeAsString,
+            int requestLengthInMinutes,
+            String userId)
+        {
+            DateTime startTime = GetDateTime(startTimeAsString);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+        }
+
+        // returns expected adjusted time adjustment at the current time based on what has expired so far.
+        // see diagram "MultipleOverlappingTestRequests.jpg" in images folder for how these overlap.
+        private int CreateMultipleExpiredAndUnexpiredOverlappingAndNonOverlappingRequests()
+        {
+            CreateRequestViaController("13:50", 120, "userId01");
+            CreateAndExpireRequest("14:10", 70, "userId02");
+            CreateAndExpireRequest("14:20", 40, "userId03");
+            CreateAndExpireRequest("13:10", 80, "userId04");
+            CreateAndExpireRequest("13:20", 50, "userId05");
+            CreateAndExpireRequest("13:50", 20, "userId06");
+            CreateAndExpireRequest("13:30", 10, "userId07");
+            CreateAndExpireRequest("13:00", 60, "userId08");
+            CreateAndExpireRequest("13:50", 50, "userId09");
+            CreateAndExpireRequest("14:10", 20, "userId10");
+            CreateRequestViaController("14:50", 50, "userId11");
+            CreateRequestViaController("15:10", 30, "userId12");
+            CreateAndExpireRequest("15:00", 10, "userId13");
+            CreateRequestViaController("15:10", 20, "userId14");
+            CreateRequestViaController("15:10", 40, "userId15");
+            CreateAndExpireRequest("14:50", 20, "userId16");
+            CreateAndExpireRequest("15:00", 20, "userId17");
+            CreateAndExpireRequest("14:50", 30, "userId18");
+            CreateRequestViaController("14:50", 30, "userId19");
+
+            return 140;
         }
     }
 }
