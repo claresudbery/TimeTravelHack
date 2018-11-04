@@ -280,11 +280,11 @@ namespace TimeTravelApi.Tests
         }
 
         [TestCase("10:00", 40, "10:20", 30, 40, false,
-            "OverlappingRequestExpiredAndLongerAndStartedAndEndedBeforeMyStartAndEnd_TimeAdjustmentIsOverlappingRequestLength")]
+            TestName = "OverlappingRequestExpiredAndLongerAndStartedAndEndedBeforeMyStartAndEnd_TimeAdjustmentIsOverlappingRequestLength")]
         [TestCase("10:00", 40, "10:10", 30, 40, true,
-            "OverlappingRequestExpiredAndLongerAndEndedAtMyEndAndIAskedFirst_TimeAdjustmentIsOverlappingRequestLength")]
+            TestName = "OverlappingRequestExpiredAndLongerAndEndedAtMyEndAndIAskedFirst_TimeAdjustmentIsOverlappingRequestLength")]
         [TestCase("10:00", 40, "10:10", 30, 40, false,
-            "OverlappingRequestExpiredAndLongerAndEndedAtMyEndAndTheyAskedFirst_TimeAdjustmentIsOverlappingRequestLength")]
+            TestName = "OverlappingRequestExpiredAndLongerAndEndedAtMyEndAndTheyAskedFirst_TimeAdjustmentIsOverlappingRequestLength")]
         [Parallelizable(ParallelScope.None)]
         public void GivenOverlappingRequestIsExpiredAndLonger_WhenMyRequestExpires_ThenTimeAdjustmentIsOverlappingRequestLength(
             String overlappingRequestStart,
@@ -303,12 +303,12 @@ namespace TimeTravelApi.Tests
                 iAskedFirst);
         }
 
-        [TestCase("10:00", 30, "10:20", 30, 30, false, 
-            "OverlappingRequestExpiredAndSameLengthAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
-        [TestCase("10:00", 30, "10:00", 30, 30, true, 
-            "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndIAskedFirst_TimeAdjustmentIsMyLength")]
-        [TestCase("10:00", 30, "10:00", 30, 30, false, 
-            "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndTheyAskedFirst_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 30, "10:20", 30, 30, false,
+            TestName = "OverlappingRequestExpiredAndSameLengthAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 30, "10:00", 30, 30, true,
+            TestName = "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndIAskedFirst_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 30, "10:00", 30, 30, false,
+            TestName = "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndTheyAskedFirst_TimeAdjustmentIsMyLength")]
         [Parallelizable(ParallelScope.None)]
         public void GivenOverlappingRequestIsExpiredAndSameLength_WhenMyRequestExpires_ThenTimeAdjustmentIsMyLength
         (String overlappingRequestStart,
@@ -327,16 +327,16 @@ namespace TimeTravelApi.Tests
                 iAskedFirst);
         }
 
-        [TestCase("10:00", 20, "10:10", 30, 30, false, 
-            "OverlappingRequestExpiredAndShorterAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
-        [TestCase("10:00", 20, "10:00", 30, 30, true, 
-            "OverlappingRequestExpiredAndShorterAndStartedAtMyStart_TimeAdjustmentIsMyLength")]
-        [TestCase("10:10", 20, "10:00", 40, 40, false, 
-            "OverlappingRequestExpiredAndShorterAndStartedAfterMeAndEndedBeforeMe_TimeAdjustmentIsMyLength")]
-        [TestCase("10:10", 20, "10:00", 30, 30, false, 
-            "OverlappingRequestExpiredAndShorterAndEndedSameTimeAsMeAndTheyAskedFirst_TimeAdjustmentIsMyLength")]
-        [TestCase("10:10", 20, "10:00", 30, 30, true, 
-            "OverlappingRequestExpiredAndShorterAndEndedSameTimeAsMeAndIAskedFirst_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 20, "10:10", 30, 30, false,
+            TestName = "OverlappingRequestExpiredAndShorterAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 20, "10:00", 30, 30, true,
+            TestName = "OverlappingRequestExpiredAndShorterAndStartedAtMyStart_TimeAdjustmentIsMyLength")]
+        [TestCase("10:10", 20, "10:00", 40, 40, false,
+            TestName = "OverlappingRequestExpiredAndShorterAndStartedAfterMeAndEndedBeforeMe_TimeAdjustmentIsMyLength")]
+        [TestCase("10:10", 20, "10:00", 30, 30, false,
+            TestName = "OverlappingRequestExpiredAndShorterAndEndedSameTimeAsMeAndTheyAskedFirst_TimeAdjustmentIsMyLength")]
+        [TestCase("10:10", 20, "10:00", 30, 30, true,
+            TestName = "OverlappingRequestExpiredAndShorterAndEndedSameTimeAsMeAndIAskedFirst_TimeAdjustmentIsMyLength")]
         [Parallelizable(ParallelScope.None)]
         public void GivenOverlappingRequestIsExpiredAndShorter_WhenMyRequestExpires_ThenTimeAdjustmentIsMyLength
         (String overlappingRequestStart,
@@ -356,15 +356,15 @@ namespace TimeTravelApi.Tests
         }
 
         [TestCase("10:00", 30, "10:10", 40,
-            "MyRequestNotExpiredAndLongerAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
-        [TestCase("10:00", 30, "9:50", 50,
-            "MyRequestNotExpiredAndLongerAndStartedBeforeOverlappingStartAndEndsdAfterOverlappingEnd_TimeAdjustedByOverlappingLength")]
+            TestName = "MyRequestNotExpiredAndLongerAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
+        [TestCase("10:00", 30, "09:50", 50,
+            TestName = "MyRequestNotExpiredAndLongerAndStartedBeforeOverlappingStartAndEndsdAfterOverlappingEnd_TimeAdjustedByOverlappingLength")]
         [TestCase("10:00", 30, "10:00", 40,
-            "MyRequestNotExpiredAndLongerAndStartedAtOverlappingStart_TimeAdjustedByOverlappingLength")]
+            TestName = "MyRequestNotExpiredAndLongerAndStartedAtOverlappingStart_TimeAdjustedByOverlappingLength")]
         [TestCase("10:00", 30, "10:20", 30,
-            "MyRequestNotExpiredAndSameLengthAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
+            TestName = "MyRequestNotExpiredAndSameLengthAndStartedAfterOverlappingStart_TimeAdjustedByOverlappingLength")]
         [TestCase("10:00", 30, "10:20", 20,
-            "MyRequestNotExpiredAndShorter_TimeAdjustedByOverlappingLength")]
+            TestName = "MyRequestNotExpiredAndShorter_TimeAdjustedByOverlappingLength")]
         [Parallelizable(ParallelScope.None)]
         public void GivenMyRequestHasNotExpiredButOverlappingRequestHasExpired_WhenIAskForTime_ThenTimeAdjustmentIsOverlappingRequestLength(
             String overlappingRequestStart,
