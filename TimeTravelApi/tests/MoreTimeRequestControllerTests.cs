@@ -113,6 +113,45 @@ namespace TimeTravelApi.Tests
             return new DateTime(2018, 10, 31, hour, minute, 0);
         }
 
+        private void CreateAndCheckTwoOverlappingTimeRequests(
+            String overlappingRequestStart,
+            int overlappingRequestLength,
+            String myRequestStart,
+            int myRequestLength,
+            int expectedTimeAdjustment,
+            bool iAskedFirst)
+        {
+            // Arrange
+            // Start by creating the "overlapping" request
+            DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
+            var overlappingUserId = "User01";
+            var myUserId = "User02";
+            CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
+            // Now add "our" request
+            var myStartTime = GetDateTime(myRequestStart);
+            CreateRequestViaController(myRequestLength, myStartTime, myUserId);
+
+            // Act
+            // Get each user to ask for the time.
+            DateTime newTime;
+            if (iAskedFirst)
+            {
+                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
+                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
+            }
+            else
+            {
+                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
+                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
+            }
+
+            // Assert
+            var negativeTimeAdjustment = expectedTimeAdjustment * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
+            Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
+        }
+
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
         [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
         [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
@@ -364,35 +403,13 @@ namespace TimeTravelApi.Tests
             int expectedTimeAdjustment,
             bool iAskedFirst)
         {
-            // Arrange
-            // Start with the overlapping request
-            DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
-            var overlappingUserId = "User01";
-            var myUserId = "User02";
-            CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
-            // Now add "our" request
-            var myStartTime = GetDateTime(myRequestStart);
-            CreateRequestViaController(myRequestLength, myStartTime, myUserId);
-
-            // Act
-            // Get each user to ask for the time.
-            DateTime newTime;
-            if (iAskedFirst)
-            {
-                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
-                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
-            }
-            else
-            {
-                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
-                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
-            }
-
-            // Assert
-            var negativeTimeAdjustment = expectedTimeAdjustment * -1;
-            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
-            Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
-            Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
+            CreateAndCheckTwoOverlappingTimeRequests(
+                overlappingRequestStart,
+                overlappingRequestLength,
+                myRequestStart,
+                myRequestLength,
+                expectedTimeAdjustment,
+                iAskedFirst);
         }
 
         [TestCase("10:00", 30, "10:20", 30, 30, false, "OverlappingRequestExpiredAndSameLengthAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
@@ -407,35 +424,13 @@ namespace TimeTravelApi.Tests
             int expectedTimeAdjustment,
             bool iAskedFirst)
         {
-            // Arrange
-            // Start with the overlapping request
-            DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
-            var overlappingUserId = "User01";
-            var myUserId = "User02";
-            CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
-            // Now add "our" request
-            var myStartTime = GetDateTime(myRequestStart);
-            CreateRequestViaController(myRequestLength, myStartTime, myUserId);
-
-            // Act
-            // Get each user to ask for the time.
-            DateTime newTime;
-            if (iAskedFirst)
-            {
-                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
-                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
-            }
-            else
-            {
-                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
-                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
-            }
-
-            // Assert
-            var negativeTimeAdjustment = expectedTimeAdjustment * -1;
-            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
-            Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
-            Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
+            CreateAndCheckTwoOverlappingTimeRequests(
+                overlappingRequestStart,
+                overlappingRequestLength,
+                myRequestStart,
+                myRequestLength,
+                expectedTimeAdjustment,
+                iAskedFirst);
         }
     }
 }
