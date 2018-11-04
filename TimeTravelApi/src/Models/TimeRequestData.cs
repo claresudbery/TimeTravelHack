@@ -22,7 +22,8 @@ namespace TimeTravelApi.Models
 
         public List<MoreTimeRequest> AllTimeRequests(MoreTimeRequestContext context)
         {
-            return context.MoreTimeRequests.ToList();
+            var requests = context.MoreTimeRequests.ToList();
+            return requests;
         }
 
         public void UpdateTimeRequest(MoreTimeRequestContext context, MoreTimeRequest request)

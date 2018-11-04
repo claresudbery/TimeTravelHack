@@ -8,7 +8,8 @@ namespace TimeTravelApi.Models
         public DateTime RequestTimeStamp { get; set; }
         public bool Expired {get; set;}
         public bool Alerted {get; set;}
-        public int LengthInMinutes {get; set;}
+        public int LengthInMinutes {get; set; }
+        public int MinutesToAdjustClockBy { get; set; }
         public String UserId {get; set;}
 
         public void Update(MoreTimeRequest newRequest)
@@ -17,6 +18,7 @@ namespace TimeTravelApi.Models
             Expired = newRequest.Expired;
             Alerted = newRequest.Alerted;
             LengthInMinutes = newRequest.LengthInMinutes;
+            MinutesToAdjustClockBy = newRequest.MinutesToAdjustClockBy;
             UserId = newRequest.UserId;
         }
     }

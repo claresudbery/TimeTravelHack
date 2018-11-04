@@ -36,7 +36,8 @@ namespace TimeTravelApi.Controllers
                         RequestTimeStamp = _clock.Now,
                         Expired = true,
                         Alerted = true,
-                        LengthInMinutes = 0
+                        LengthInMinutes = 0,
+                        MinutesToAdjustClockBy = 0
                     });
                 _timeRequestData.SaveChanges(_dbContext);
             }
@@ -87,7 +88,7 @@ namespace TimeTravelApi.Controllers
             if (justExpiredTimeRequests.Count() > 0)
             {
                 var earliestExpiredRequestLength = justExpiredTimeRequests
-                    .Select(x => x.LengthInMinutes)
+                    .Select(x => x.MinutesToAdjustClockBy)
                     .Max();
 
                 _timeTracker.AccumulatedTimeDifference += earliestExpiredRequestLength;
@@ -118,10 +119,10 @@ namespace TimeTravelApi.Controllers
 
             foreach (var request in unexpiredTimeRequests)
             {
-                request.LengthInMinutes -= newTimeAdjustment;
-                if (request.LengthInMinutes <= 0)
+                request.MinutesToAdjustClockBy -= newTimeAdjustment;
+                if (request.MinutesToAdjustClockBy <= 0)
                 {
-                    request.LengthInMinutes = 0;
+                    request.MinutesToAdjustClockBy = 0;
                     request.Expired = true;
                 }
                 _timeRequestData.UpdateTimeRequest(_dbContext, request);
@@ -140,6 +141,7 @@ namespace TimeTravelApi.Controllers
                 Expired = false,
                 Alerted = false,
                 LengthInMinutes = newRequest.LengthInMinutes,
+                MinutesToAdjustClockBy = newRequest.LengthInMinutes,
                 UserId = newRequest.UserId
             };
             _timeRequestData.AddTimeRequest(_dbContext, newItem);
