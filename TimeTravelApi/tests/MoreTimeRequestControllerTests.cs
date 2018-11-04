@@ -69,18 +69,24 @@ namespace TimeTravelApi.Tests
             _timeRequestData.AddTimeRequest(_dbDummyContext, timeRequest);
         }
 
-        private void AlertUser(DateTime startTime, int requestLengthInMinutes, string userId)
+        private bool AlertUser(DateTime startTime, int requestLengthInMinutes, string userId)
         {
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
             _testClock.SetDateTime(requestTime);
-            _controller.GetAlert(userId);
+            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(userId);
+            return alertAction.Value.Alert;
         }
 
-        private void ExpireRequest(DateTime startTime, int requestLengthInMinutes, string userId)
+        private DateTime ExpireRequest(DateTime startTime, int requestLengthInMinutes, string userId)
         {
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
             _testClock.SetDateTime(requestTime);
-            _controller.GetTime(userId);
+            ActionResult<TimeAndAlert> timeAction = _controller.GetTime(userId);
+            return new DateTime(
+                2018, 10, 31, 
+                timeAction.Value.NewHours, 
+                timeAction.Value.NewMinutes,
+                timeAction.Value.NewSeconds);
         }
 
         private DateTime GetExpectedTime(
@@ -169,7 +175,6 @@ namespace TimeTravelApi.Tests
             DateTime expectedTime = GetExpectedTime(expectedTimeType, startTime, requestTime);
             Assert.AreEqual(expectedTime.Hour, timeAction.Value.NewHours);
             Assert.AreEqual(expectedTime.Minute, timeAction.Value.NewMinutes);
-            Assert.AreEqual(expectedTime.Second, timeAction.Value.NewSeconds);
         }
 
         [Test]
@@ -193,7 +198,6 @@ namespace TimeTravelApi.Tests
             var adjustedTime = currentTime.AddMinutes(negativeRequestLength);
             Assert.AreEqual(adjustedTime.Hour, timeAction.Value.NewHours);
             Assert.AreEqual(adjustedTime.Minute, timeAction.Value.NewMinutes);
-            Assert.AreEqual(adjustedTime.Second, timeAction.Value.NewSeconds);
         }
 
         [Test]
@@ -233,12 +237,10 @@ namespace TimeTravelApi.Tests
             var expectedFirstResult = firstExpirationTime.AddMinutes(negativeTimeAdjustment);
             Assert.AreEqual(expectedFirstResult.Hour, firstExpirationResult.Value.NewHours);
             Assert.AreEqual(expectedFirstResult.Minute, firstExpirationResult.Value.NewMinutes);
-            Assert.AreEqual(expectedFirstResult.Second, firstExpirationResult.Value.NewSeconds);
             // Second time should only be adjusted by the length of the third request.
             var expectedSecondResult = secondExpirationTime.AddMinutes(negativeTimeAdjustment);
             Assert.AreEqual(expectedSecondResult.Hour, secondExpirationResult.Value.NewHours);
             Assert.AreEqual(expectedSecondResult.Minute, secondExpirationResult.Value.NewMinutes);
-            Assert.AreEqual(expectedSecondResult.Second, secondExpirationResult.Value.NewSeconds);
         }
 
         [Test]
@@ -257,7 +259,7 @@ namespace TimeTravelApi.Tests
             var startTime3 = startTime1.AddMinutes(2);
             var shorterRequestLength = requestLengthInMinutes - 10;
             CreateRequestViaController(shorterRequestLength, startTime3, userId);
-            // Get the third request to reset the clock.
+            // Get the third request to alert the user.
             AlertUser(startTime3, shorterRequestLength, userId);
 
             // Act
@@ -277,7 +279,7 @@ namespace TimeTravelApi.Tests
             Assert.AreEqual(false, secondAlertResult.Value.Alert);
         }
 
-        // !! Tis doesn't really make sense but this is here to record that nonetheless this is how it currently works !!
+        // !! This doesn't really make sense but this is here to record that nonetheless this is how it currently works !!
         [Test]
         [Parallelizable(ParallelScope.None)]
         public void GivenOtherUserRequestHasNotExpired_WhenNewOverlappingRequestExpires_ThenPreviousRequestCanStillResetClockLater()
@@ -309,7 +311,6 @@ namespace TimeTravelApi.Tests
             var expectedResult = expirationTime.AddMinutes(negativeTimeAdjustment);
             Assert.AreEqual(expectedResult.Hour, expirationResult.Value.NewHours);
             Assert.AreEqual(expectedResult.Minute, expirationResult.Value.NewMinutes);
-            Assert.AreEqual(expectedResult.Second, expirationResult.Value.NewSeconds);
         }
 
         [Test]
@@ -326,7 +327,7 @@ namespace TimeTravelApi.Tests
             var startTime2 = startTime1.AddMinutes(1);
             var shorterRequestLength = requestLengthInMinutes - 10;
             CreateRequestViaController(shorterRequestLength, startTime2, userId02);
-            // Get the second request to reset the clock.
+            // Get the second request to alert.
             AlertUser(startTime2, shorterRequestLength, userId02);
 
             // Act
