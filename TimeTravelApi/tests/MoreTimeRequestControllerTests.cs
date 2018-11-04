@@ -394,5 +394,48 @@ namespace TimeTravelApi.Tests
             Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
             Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
         }
+
+        [TestCase("10:00", 30, "10:20", 30, 30, false, "OverlappingRequestExpiredAndSameLengthAndStartedBeforeMyStart_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 30, "10:00", 30, 30, true, "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndIAskedFirst_TimeAdjustmentIsMyLength")]
+        [TestCase("10:00", 30, "10:00", 30, 30, false, "OverlappingRequestExpiredAndSameLengthAndStartedAtMyStartAndTheyAskedFirst_TimeAdjustmentIsMyLength")]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOverlappingRequestIsExpiredAndSameLength_WhenMyRequestExpires_ThenTimeAdjustmentIsMyLength
+        (String overlappingRequestStart,
+            int overlappingRequestLength,
+            String myRequestStart,
+            int myRequestLength,
+            int expectedTimeAdjustment,
+            bool iAskedFirst)
+        {
+            // Arrange
+            // Start with the overlapping request
+            DateTime overlappingStartTime = GetDateTime(overlappingRequestStart);
+            var overlappingUserId = "User01";
+            var myUserId = "User02";
+            CreateRequestViaController(overlappingRequestLength, overlappingStartTime, overlappingUserId);
+            // Now add "our" request
+            var myStartTime = GetDateTime(myRequestStart);
+            CreateRequestViaController(myRequestLength, myStartTime, myUserId);
+
+            // Act
+            // Get each user to ask for the time.
+            DateTime newTime;
+            if (iAskedFirst)
+            {
+                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
+                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
+            }
+            else
+            {
+                ExpireRequest(overlappingStartTime, overlappingRequestLength, overlappingUserId);
+                newTime = ExpireRequest(myStartTime, myRequestLength, myUserId);
+            }
+
+            // Assert
+            var negativeTimeAdjustment = expectedTimeAdjustment * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, expectedTime.Hour);
+            Assert.AreEqual(expectedTime.Minute, expectedTime.Minute);
+        }
     }
 }
