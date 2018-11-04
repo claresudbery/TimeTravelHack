@@ -436,8 +436,26 @@ namespace TimeTravelApi.Tests
         [Parallelizable(ParallelScope.None)]
         public void GivenOtherRequestsExpiredBeforeWeStarted_WhenWeExpire_ThenTimeAdjustmentIncludesPreviousRequests()
         {
-            // This is just a placeholder - still need to write the test.
-            Assert.True(false);
+            // Arrange
+            int length01 = 30;
+            CreateAndExpireRequest("06:00", length01, "userId01");
+            int length02 = 40;
+            CreateAndExpireRequest("07:10", length02, "userId01");
+            int length03 = 70;
+            CreateAndExpireRequest("07:10", length03, "userId01");
+            // Our request:
+            int ourRequestLengthInMinutes = 45;
+            var ourStartTime = new DateTime(2018, 10, 31, 9, 0, 0);
+            CreateRequestViaController(ourRequestLengthInMinutes, ourStartTime, "userId01");
+
+            // Act
+            var timeResult = ExpireRequest(ourStartTime, ourRequestLengthInMinutes, "userId01");
+
+            // Assert
+            var negativeTimeAdjustment = (length01 + length02 + length03 + ourRequestLengthInMinutes) * -1;
+            var expectedTime = _testClock.Now.AddMinutes(negativeTimeAdjustment);
+            Assert.AreEqual(expectedTime.Hour, timeResult.Hour);
+            Assert.AreEqual(expectedTime.Minute, timeResult.Minute);
         }
     }
 }
