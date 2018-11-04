@@ -98,6 +98,8 @@ namespace TimeTravelApi.Controllers
                     _timeRequestData.UpdateTimeRequest(_dbContext, request);
                 }
                 _timeRequestData.SaveChanges(_dbContext);
+
+                RemoveNewTimeAdjustmentFromUnexpiredRequestLengths(earliestExpiredRequestLength);
             }
 
             var negativeTimeDifference = _timeTracker.AccumulatedTimeDifference * -1;
@@ -105,6 +107,27 @@ namespace TimeTravelApi.Controllers
             return new TimeAndAlert {NewHours = newTime.TimeOfDay.Hours,
                                     NewMinutes = newTime.TimeOfDay.Minutes,
                                     NewSeconds = newTime.TimeOfDay.Seconds};
+        }
+
+        private void RemoveNewTimeAdjustmentFromUnexpiredRequestLengths(int newTimeAdjustment)
+        {
+            var unexpiredTimeRequests = _timeRequestData
+                .AllTimeRequests(_dbContext)
+                .Where(x => x.Expired == false)
+                .ToList();
+
+            foreach (var request in unexpiredTimeRequests)
+            {
+                request.LengthInMinutes -= newTimeAdjustment;
+                if (request.LengthInMinutes <= 0)
+                {
+                    request.LengthInMinutes = 0;
+                    request.Expired = true;
+                }
+                _timeRequestData.UpdateTimeRequest(_dbContext, request);
+            }
+
+            _timeRequestData.SaveChanges(_dbContext);
         }
 
         [HttpPost]
