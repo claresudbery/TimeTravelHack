@@ -18,7 +18,6 @@ img.style="cursor:pointer;fill:#BBB";
 $(document).ready(function () {
     getData();
     updateClockData();
-    checkForAlerts();
 });
 
 function uuidv4() {
@@ -191,7 +190,7 @@ function getTimeFromApi() {
     });
 }
 
-function getAlert() {
+function checkForAlerts() {
     $.ajax({
         type: 'GET',
         url: uri + '/alert/' + uniqueId,
@@ -247,6 +246,7 @@ function updateClockData() {
 	setInterval(() => { 
         // Only make API calls every 10 seconds
         if (seconds % 10 === 0) {
+            checkForAlerts();
             getTimeFromApi();
         }
         // Because of API delays and infrequent API requests, it's better to handle the seconds separately from the hours and minutes.
@@ -256,12 +256,6 @@ function updateClockData() {
         }
         updateClockDisplay();
     }, 1000) // The interval goes off once per second, but the API call is made less often (see above).
-}
-
-function checkForAlerts() {
-	setInterval(() => { 
-        getAlert();
-    }, 20000) // Only make API calls every 20 seconds
 }
 
 function formatTimeDisplay(number) {
