@@ -52,6 +52,12 @@ namespace TimeTravelApi.Tests
             return alertAction.Value.Alert;
         }
 
+        private bool AlertUser(string startTimeAsString, int requestLengthInMinutes, string userId)
+        {
+            DateTime startTime = GetDateTime(startTimeAsString);
+            return AlertUser(startTime, requestLengthInMinutes, userId);
+        }
+
         private DateTime ExpireRequest(DateTime startTime, int requestLengthInMinutes, string userId)
         {
             var requestTime = startTime.AddMinutes(requestLengthInMinutes);
@@ -178,29 +184,81 @@ namespace TimeTravelApi.Tests
             CreateRequestViaController(requestLengthInMinutes, startTime, userId);
         }
 
+        private void CreateRequestAndUpdateExpirations(
+            String startTimeAsString,
+            int requestLengthInMinutes,
+            String userId)
+        {
+            DateTime startTime = GetDateTime(startTimeAsString);
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+            var requestTime = startTime.AddMinutes(1);
+            UpdateExpirations(requestTime);
+        }
+
+        private void UpdateExpirations(DateTime requestTime)
+        {
+            _testClock.SetDateTime(requestTime);
+            _controller.GetTime("Any user");
+        }
+
+        private void UpdateExpirations(String requestTimeAsString)
+        {
+            DateTime requestTime = GetDateTime(requestTimeAsString);
+            _testClock.SetDateTime(requestTime);
+            _controller.GetTime("Any user");
+        }
+
         // returns expected adjusted time adjustment at the current time based on what has expired so far.
         // see diagram "MultipleOverlappingTestRequests.jpg" in images folder for how these overlap.
         private int CreateMultipleExpiredAndUnexpiredOverlappingAndNonOverlappingRequests()
         {
+            // Note that these need to be created in the order of their start times,
+            // to make sure that all the correct requests are present for updating when any of them expire.
+            // Also if you have any that start at the same time, don't update expirations until 
+            // they have all been added.
+            // Also keep updating every ten minutes so that all expirations are caught at the right time.
+            CreateRequestViaController("13:00", 60, "userId08");
+            UpdateExpirations("13:01");
+
+            CreateRequestViaController("13:10", 80, "userId04");
+            UpdateExpirations("13:11");
+
+            CreateRequestViaController("13:20", 50, "userId05");
+            UpdateExpirations("13:21");
+
+            CreateRequestViaController("13:30", 10, "userId07");
+            UpdateExpirations("13:31");
+            UpdateExpirations("13:41");
+
+            CreateRequestViaController("13:50", 50, "userId09");
+            CreateRequestViaController("13:50", 20, "userId06");
             CreateRequestViaController("13:50", 120, "userId01");
-            CreateAndExpireRequest("14:10", 70, "userId02");
-            CreateAndExpireRequest("14:20", 40, "userId03");
-            CreateAndExpireRequest("13:10", 80, "userId04");
-            CreateAndExpireRequest("13:20", 50, "userId05");
-            CreateAndExpireRequest("13:50", 20, "userId06");
-            CreateAndExpireRequest("13:30", 10, "userId07");
-            CreateAndExpireRequest("13:00", 60, "userId08");
-            CreateAndExpireRequest("13:50", 50, "userId09");
-            CreateAndExpireRequest("14:10", 20, "userId10");
+            UpdateExpirations("13:51");
+            UpdateExpirations("14:01");
+
+            CreateRequestViaController("14:10", 70, "userId02");
+            CreateRequestViaController("14:10", 20, "userId10");
+            UpdateExpirations("14:11");
+
+            CreateRequestViaController("14:20", 40, "userId03");
+            UpdateExpirations("14:21");
+            UpdateExpirations("14:31");
+            UpdateExpirations("14:41");
+
             CreateRequestViaController("14:50", 50, "userId11");
-            CreateRequestViaController("15:10", 30, "userId12");
-            CreateAndExpireRequest("15:00", 10, "userId13");
+            CreateRequestViaController("14:50", 20, "userId16");
+            CreateRequestViaController("14:50", 30, "userId18");
+            CreateRequestViaController("14:50", 30, "userId19");
+            UpdateExpirations("14:51");
+
+            CreateRequestViaController("15:00", 20, "userId17");
+            CreateRequestViaController("15:00", 10, "userId13");
+            UpdateExpirations("15:01");
+
             CreateRequestViaController("15:10", 20, "userId14");
             CreateRequestViaController("15:10", 40, "userId15");
-            CreateAndExpireRequest("14:50", 20, "userId16");
-            CreateAndExpireRequest("15:00", 20, "userId17");
-            CreateAndExpireRequest("14:50", 30, "userId18");
-            CreateRequestViaController("14:50", 30, "userId19");
+            CreateRequestViaController("15:10", 30, "userId12");
+            UpdateExpirations("15:11");
 
             return 140;
         }
