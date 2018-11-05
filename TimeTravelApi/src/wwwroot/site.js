@@ -148,7 +148,6 @@ function stopAlerting(interval) {
         puckConnection.write("LED3.reset();\n", function() {});
     }
     clearInterval(interval);   
-    getData();  
 }
 
 function reactToAlert(puckConnection) {  
@@ -214,6 +213,7 @@ function tickOverFromOneMinuteToTheNext() {
         alert = false;
         reactToAlert(puckConnection);
     }
+    getData();  
 }
 
 function updateClockDisplay() {
