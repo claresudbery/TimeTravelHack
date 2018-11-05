@@ -47,16 +47,29 @@ namespace TimeTravelApi.Utils
             return expired;
         }
 
+        private DateTime RemoveSeconds(DateTime source)
+        {
+            return new DateTime(
+                source.Year,
+                source.Month,
+                source.Day,
+                source.Hour,
+                source.Minute,
+                0
+            );
+        }
+
         public int GetTimeDifferenceSinceRequest(
             MoreTimeRequest request, 
             int accumulatedTime,
             ITimeTravelClock clock)
         {
             var negativeTimeDifference = request.TimeAdjustmentAtCreationTime * -1;
-            var timeNowFromRequestUserPerspective = clock.Now.AddMinutes(negativeTimeDifference);
+            var timeNowFromRequestUserPerspective = RemoveSeconds(clock.Now.AddMinutes(negativeTimeDifference));
+            var requestTimeWithoutSeconds = RemoveSeconds(request.RequestTimeStamp);
             var timeDifference = Convert.ToInt32(
                 timeNowFromRequestUserPerspective
-                    .Subtract(request.RequestTimeStamp)
+                    .Subtract(requestTimeWithoutSeconds)
                     .TotalMinutes);
             return timeDifference;
         }
