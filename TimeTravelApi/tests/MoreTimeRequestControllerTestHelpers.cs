@@ -260,7 +260,7 @@ namespace TimeTravelApi.Tests
             CreateRequestViaController("15:10", 30, "userId12");
             UpdateExpirations("15:11");
 
-            return 140;
+            return 130;
         }
     }
 }
