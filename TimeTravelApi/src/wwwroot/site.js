@@ -9,7 +9,7 @@ var seconds;
 var newHours;
 var newMinutes;
 var alert = false;
-var dataReceivedFromAPI = false;
+var firstTime = true;
 
 // Make sure your mouse cursor turns into a hand when over the tardis, and gray it out
 var img = document.getElementsByTagName('img')[0];
@@ -17,7 +17,6 @@ img.style="cursor:pointer;fill:#BBB";
 
 $(document).ready(function () {
     getData();
-    seconds = 0;
     updateClockData();
     checkForAlerts();
 });
@@ -173,7 +172,7 @@ function reactToAlert(puckConnection) {
     }, 500); // every 500 milliseconds (ie twice per second)
 }
 
-function getTime() {
+function getTimeFromApi() {
     $.ajax({
         type: 'GET',
         url: uri + '/time/' + uniqueId,
@@ -183,8 +182,8 @@ function getTime() {
                 + " (won't update until seconds reach :59)");
             newHours = data.newHours;
             newMinutes = data.newMinutes;
-            if (!dataReceivedFromAPI) {
-                dataReceivedFromAPI = true;
+            if (firstTime) {
+                firstTime = false;
                 hours = newHours;
                 minutes = newMinutes;
             }
@@ -225,21 +224,37 @@ function updateClockDisplay() {
     document.querySelector('.clock').innerHTML = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 }
 
+function setTimeTenSecondsBehindSoApiCatchesUp(timeNow) {    
+    seconds = timeNow.getSeconds() - 10;
+    if (seconds < 0) {
+        seconds = seconds + 60;
+    }
+}
+
+function getRealTime() {
+    var timeNow = new Date(); // for now
+    hours = timeNow.getHours(); 
+    minutes = timeNow.getMinutes();
+    setTimeTenSecondsBehindSoApiCatchesUp(timeNow);
+    newHours = hours;
+    newMinutes = minutes;
+    updateClockDisplay(); 
+}
+
 function updateClockData() {
+    getRealTime();
+    getTimeFromApi();
 	setInterval(() => { 
-        // Only make API calls every 20 seconds
-        if (seconds === 0 || seconds === 20 || seconds === 40)
-        {
-            getTime();
+        // Only make API calls every 10 seconds
+        if (seconds % 10 === 0) {
+            getTimeFromApi();
         }
         // Because of API delays and infrequent API requests, it's better to handle the seconds separately from the hours and minutes.
         seconds = seconds + 1;
         if (seconds === 60) {
             tickOverFromOneMinuteToTheNext();
         }
-        if (dataReceivedFromAPI) {
-            updateClockDisplay();
-        }
+        updateClockDisplay();
     }, 1000) // The interval goes off once per second, but the API call is made less often (see above).
 }
 
