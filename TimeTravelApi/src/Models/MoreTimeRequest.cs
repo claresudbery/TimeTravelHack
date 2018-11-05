@@ -10,6 +10,7 @@ namespace TimeTravelApi.Models
         public bool Alerted {get; set;}
         public int LengthInMinutes {get; set; }
         public int MinutesToAdjustClockBy { get; set; }
+        public int TimeAdjustmentAtCreationTime { get; set; }
         public String UserId {get; set;}
 
         public void Update(MoreTimeRequest newRequest)
@@ -19,6 +20,7 @@ namespace TimeTravelApi.Models
             Alerted = newRequest.Alerted;
             LengthInMinutes = newRequest.LengthInMinutes;
             MinutesToAdjustClockBy = newRequest.MinutesToAdjustClockBy;
+            TimeAdjustmentAtCreationTime = newRequest.TimeAdjustmentAtCreationTime;
             UserId = newRequest.UserId;
         }
     }

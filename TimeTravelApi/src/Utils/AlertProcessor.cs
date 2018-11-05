@@ -14,7 +14,7 @@ namespace TimeTravelApi.Utils
             if (timeRequest.Alerted == false)
             {
                 var timeDifference = GetTimeDifferenceSinceRequest(
-                    timeRequest.RequestTimeStamp, 
+                    timeRequest, 
                     accumulatedTime,
                     clock);
 
@@ -35,7 +35,7 @@ namespace TimeTravelApi.Utils
             if (timeRequest.Expired == false)
             {
                 var timeDifference = GetTimeDifferenceSinceRequest(
-                    timeRequest.RequestTimeStamp, 
+                    timeRequest, 
                     accumulatedTime,
                     clock);
 
@@ -48,13 +48,16 @@ namespace TimeTravelApi.Utils
         }
 
         public int GetTimeDifferenceSinceRequest(
-            DateTime requestTimestamp, 
+            MoreTimeRequest request, 
             int accumulatedTime,
             ITimeTravelClock clock)
         {
-            var negativeTimeDifference = accumulatedTime * -1;
-            var timeNow = clock.Now.AddMinutes(negativeTimeDifference);
-            var timeDifference = Convert.ToInt32(timeNow.Subtract(requestTimestamp).TotalMinutes);
+            var negativeTimeDifference = request.TimeAdjustmentAtCreationTime * -1;
+            var timeNowFromRequestUserPerspective = clock.Now.AddMinutes(negativeTimeDifference);
+            var timeDifference = Convert.ToInt32(
+                timeNowFromRequestUserPerspective
+                    .Subtract(request.RequestTimeStamp)
+                    .TotalMinutes);
             return timeDifference;
         }
     }

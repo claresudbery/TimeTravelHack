@@ -18,6 +18,7 @@ namespace TimeTravelApi.Tests.ModelBuilders
                 Expired = false,
                 LengthInMinutes = TimeConstants.DefaultRequestLengthInMinutes,
                 MinutesToAdjustClockBy = TimeConstants.DefaultRequestLengthInMinutes,
+                TimeAdjustmentAtCreationTime = 0,
                 RequestTimeStamp = DateTime.Now,
                 UserId = "Some user"
             };
@@ -49,6 +50,12 @@ namespace TimeTravelApi.Tests.ModelBuilders
         public TimeRequestModelBuilder WithMinutesToAdjustClockBy(int minutes)
         {
             _timeRequest.MinutesToAdjustClockBy = minutes;
+            return this;
+        }
+
+        public TimeRequestModelBuilder WithTimeAdjustmentAtCreationTime(int timeAdjustment)
+        {
+            _timeRequest.TimeAdjustmentAtCreationTime = timeAdjustment;
             return this;
         }
 

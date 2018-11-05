@@ -37,7 +37,8 @@ namespace TimeTravelApi.Controllers
                         Expired = true,
                         Alerted = true,
                         LengthInMinutes = 0,
-                        MinutesToAdjustClockBy = 0
+                        MinutesToAdjustClockBy = 0,
+                        TimeAdjustmentAtCreationTime = 0
                     });
                 _timeRequestData.SaveChanges(_dbContext);
             }
@@ -142,6 +143,7 @@ namespace TimeTravelApi.Controllers
                 Alerted = false,
                 LengthInMinutes = newRequest.LengthInMinutes,
                 MinutesToAdjustClockBy = newRequest.LengthInMinutes,
+                TimeAdjustmentAtCreationTime = _timeTracker.AccumulatedTimeDifference,
                 UserId = newRequest.UserId
             };
             _timeRequestData.AddTimeRequest(_dbContext, newItem);
