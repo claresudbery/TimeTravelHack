@@ -43,6 +43,35 @@ namespace TimeTravelApi.Tests
             _timeTracker.AccumulatedTimeDifference = 0;
         }
 
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void RequestExpirationIsBasedOnMinutesButNotSeconds()
+        {
+            // Arrange
+            var year = 2018;
+            var month = 10;
+            var day = 31;
+            var hour = 12;
+            var startTimeMinutes = 30;
+            var startTimeSeconds = 51;
+            var requestLengthInMinutes = 1;
+            var startTime = new DateTime(year, month, day, hour, startTimeMinutes, startTimeSeconds);
+            var userId = "User01";
+            CreateRequestViaController(requestLengthInMinutes, startTime, userId);
+
+            // Act
+            // Because we are moving from 12:30:51 to 12:31:03, the actual elapsed time is only 12 seconds, 
+            // but still we should get an alert.
+            var requestTimeMinutes = startTimeMinutes + requestLengthInMinutes;
+            var requestTimeSeconds = 03;
+            var requestTime = new DateTime(year, month, day, hour, requestTimeMinutes, requestTimeSeconds);
+            _testClock.SetDateTime(requestTime);
+            ActionResult<TimeAndAlert> alertAction = _controller.GetAlert(userId);
+
+            // Assert
+            Assert.AreEqual(true, alertAction.Value.Alert);
+        }
+
         [TestCase(true, true, true, TestName = "TimeIsUp_CalledByRequester_AlertIsTrue")]
         [TestCase(false, true, false, TestName = "TimeIsNotUp_CalledByRequester_AlertIsFalse")]
         [TestCase(false, false, false, TestName = "TimeIsNotUp_CalledByOtherUser_AlertIsFalse")]
