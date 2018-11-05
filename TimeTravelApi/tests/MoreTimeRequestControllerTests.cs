@@ -457,5 +457,22 @@ namespace TimeTravelApi.Tests
             Assert.AreEqual(expectedTime.Hour, timeResult.Hour);
             Assert.AreEqual(expectedTime.Minute, timeResult.Minute);
         }
+
+        // When this test passes, then GivenMultipleExpiredAndUnexpiredOverlappingAndNonOverlappingRequests_WhenWeExpire_ThenTimeAdjustmentIsOverallAdjustment
+        // should also pass. See overlapping-time-notes-txt.
+        [Test]
+        [Parallelizable(ParallelScope.None)]
+        public void GivenOverlappingRequestStartedAfterMeAndEndedBeforeMe_WhenIAskForAlert_IShouldGetItAfterMyRequestLength()
+        {
+            // Arrange
+            CreateRequestViaController("06:00", 60, "userId02");
+            CreateAndExpireRequest("06:20", 20, "userId01");
+
+            // Act
+            var alertResult = AlertUser("06:00", 60, "userId02");
+
+            // Assert
+            Assert.True(alertResult);
+        }
     }
 }
