@@ -13,9 +13,8 @@ Not only does it reset your time, it resets everybody’s time… by texting Gre
 
 We’ll conveniently ignore all the people standing on platforms waiting for trains that never arrive because the clocks keep winding back. Also the more people that use the app, the longer everybody’s day gets. In theory your day could never end… and the sun would start rising and setting at really odd times. Although there is some fun maths around the fact that if one person asks for time before the end of a previous user’s request, the day doesn’t lengthen by as much as you might think (see TimeTravelHack/TimeTravelApi/tests/MoreTimeRequestControllerTests.cs).
 
-We wrote more about our experiences here:
-
-https://medium.com/a-woman-in-technology/hack-manchester-2018-best-in-show-ca6ef65fb49c
+We wrote more about our experiences here:  
+https://medium.com/a-woman-in-technology/hack-manchester-2018-best-in-show-ca6ef65fb49c . 
 
 We made a video about it here: https://youtu.be/EjgwNEOZt8w
 
