@@ -217,10 +217,12 @@ function tickOverFromOneMinuteToTheNext() {
 }
 
 function updateClockDisplay() {
-    var formattedHours = formatTimeDisplay(hours);
-    var formattedMinutes = formatTimeDisplay(minutes);
-    var formattedSeconds = formatTimeDisplay(seconds);
-    document.querySelector('.clock').innerHTML = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    if (!firstTime) {
+        var formattedHours = formatTimeDisplay(hours);
+        var formattedMinutes = formatTimeDisplay(minutes);
+        var formattedSeconds = formatTimeDisplay(seconds);
+        document.querySelector('.clock').innerHTML = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+    }
 }
 
 function setTimeTenSecondsBehindSoApiCatchesUp(timeNow) {    
@@ -230,18 +232,13 @@ function setTimeTenSecondsBehindSoApiCatchesUp(timeNow) {
     }
 }
 
-function getRealTime() {
+function getRealSeconds() {
     var timeNow = new Date(); // for now
-    hours = timeNow.getHours(); 
-    minutes = timeNow.getMinutes();
     setTimeTenSecondsBehindSoApiCatchesUp(timeNow);
-    newHours = hours;
-    newMinutes = minutes;
-    updateClockDisplay(); 
 }
 
 function updateClockData() {
-    getRealTime();
+    getRealSeconds();
     getTimeFromApi();
 	setInterval(() => { 
         // Only make API calls every 10 seconds
