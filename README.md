@@ -15,6 +15,7 @@ We’ll conveniently ignore all the people standing on platforms waiting for tra
 
 We wrote more about our experiences here:  
 https://medium.com/a-woman-in-technology/hack-manchester-2018-best-in-show-ca6ef65fb49c . 
+https://salfreudenberg.wordpress.com/2018/11/07/hack-like-a-woman-how-self-care-and-some-agile-techniques-helped-us-win-hackathon-best-in-show/  
 
 We made a video about it here: https://youtu.be/EjgwNEOZt8w
 
