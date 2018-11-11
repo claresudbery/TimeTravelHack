@@ -1,8 +1,0 @@
-There is a problem that if a shorter request that started after and finished before my request...
-If that shorter one expires before I do, the clock gets reset while I am asleep.
-But this means that when we're trying to calculate time difference in AlertProcessor.GetTimeDifferenceSinceRequest...
-...we use the adjusted current time to calculate how long it is since my request started.
-So if time was adjusted by 20 mins while I was asleep and I asked for 60 minutes, I'll actually get 80 minutes instead.
-I think the solution is to note what the timeAdjustment was at the point that I was created, and store this on MoreTimeRequest.
-Then AlertProcessor.GetTimeDifferenceSinceRequest should use THAT adjustment onto clock.Now, 
-instead of whatever the current adjustment is.
