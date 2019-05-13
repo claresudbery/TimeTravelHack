@@ -57,3 +57,6 @@ The app has been designed to work with a puck.js IoT button (https://www.puck-js
 - If you want multiple users, open up multiple browser tabs all connected to the same url. Each browser tab can be connected to a different puck.js button, or they can all be connected to the same button (in which case one puck click will generate multiple requests), or they can all be puckless, or you can mix and match.
 - If you want to know what happens when you have multiple overlapping requests from different users, check out all the relevant tests in TimeTravelHack/TimeTravelApi/tests/MoreTimeRequestControllerTests.cs.
 
+#BUGS
+-  If A presses button at 3pm and B presses button at 3:15pm then A will benefit from B's time rewind and a second rewind is not needed. But if C presses button at 3:25 (original time) then click will have anyway reset and they will see 3:05 (new time) which means that 20 mins later they want it to still be 3:05. But because they are overlapping B's time they will see no difference in time, because overlapping periods are ignored? But B was already overlapping B. What B sees makes sense but what C sees makes no sense. Or did we already fix this??
+
